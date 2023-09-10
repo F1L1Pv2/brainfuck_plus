@@ -88,15 +88,38 @@ fn main() {
 
     let mut last_condition = 0;
 
+    let mem_size = 1024*1024;
+
     for i in 0..len{
         let ch = contents.chars().nth(i).unwrap();
 
         match ch{
             '>'=>{
+                // file_content.push_str("    add QWORD[pointer], 1\n");
+
+                //check if pointer is at the end
+                file_content.push_str(format!("    cmp QWORD[pointer], {}\n", mem_size-1).as_str());
+                file_content.push_str(format!("    je bound_{}\n",i).as_str());
                 file_content.push_str("    add QWORD[pointer], 1\n");
+                file_content.push_str(format!("    jmp skip_{}\n",i).as_str());
+                file_content.push_str(format!("bound_{}:\n",i).as_str());
+                file_content.push_str("    mov QWORD[pointer], 0\n");
+                file_content.push_str(format!("skip_{}:\n",i).as_str());
             }
             '<'=>{
+
+                //check if pointer is zero
+                file_content.push_str("    cmp QWORD[pointer], 0\n");
+                file_content.push_str(format!("    je bound_{}\n",i).as_str());
                 file_content.push_str("    sub QWORD[pointer], 1\n");
+                file_content.push_str(format!("    jmp skip_{}\n",i).as_str());
+                file_content.push_str(format!("bound_{}:\n",i).as_str());
+                file_content.push_str(format!("    mov QWORD[pointer], {}\n", mem_size-1).as_str());
+                file_content.push_str(format!("skip_{}:\n",i).as_str());
+
+
+
+                // file_content.push_str("    sub QWORD[pointer], 1\n");
             }
             '+'=>{
                 file_content.push_str("    mov rax, mem\n");
@@ -194,7 +217,7 @@ fn main() {
 
     file_content.push_str("section .bss\n");
     file_content.push_str("    pointer: resb 8\n");
-    file_content.push_str(format!("    mem: resb {} \n", 1024*1024).as_str());
+    file_content.push_str(format!("    mem: resb {} \n", mem_size).as_str());
 
 
     // create a new file
