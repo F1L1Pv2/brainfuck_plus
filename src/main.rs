@@ -214,6 +214,7 @@ fn main() {
 
     std::process::Command::new("nasm")
         .arg("-felf64")
+        .arg("-g")
         .arg(&format!("{}", filename.replace(".bfp", ".asm")))
         .output()
         .expect("failed to execute process");
