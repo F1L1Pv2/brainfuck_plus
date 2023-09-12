@@ -16,9 +16,9 @@ fn main() {
 
     let filename = &args[1];
 
-    //check if extension is .bfp
-    if !filename.ends_with(".bfp"){
-        println!("Brain fuck plus files must have .bfp extension");
+    //check if extension is .bf
+    if !filename.ends_with(".bf"){
+        println!("Brain fuck plus files must have .bf extension");
         exit(1);
     }
 
@@ -89,6 +89,7 @@ fn main() {
     let mut last_condition = 0;
 
     let mem_size = 1024*1024;
+    let mut mem_dbg_ln = 0;
 
     for i in 0..len{
         let ch = contents.chars().nth(i).unwrap();
@@ -121,6 +122,36 @@ fn main() {
 
                 // file_content.push_str("    sub QWORD[pointer], 1\n");
             }
+            '$'=>{
+                file_content.push_str(format!("debug_mem_{}:\n",mem_dbg_ln).as_str());
+                file_content.push_str("    mov rax, mem\n");
+                file_content.push_str("    add rax, QWORD[pointer]\n");
+                file_content.push_str("    mov rbx, rax\n");
+                file_content.push_str("    mov QWORD[rax], rbx\n");
+                mem_dbg_ln +=1 ;
+            }
+
+
+            '?'=>{
+                file_content.push_str("    mov rbp, mem\n");
+                file_content.push_str("    add rbp, QWORD[pointer]\n");
+                file_content.push_str("    mov rax, QWORD[rbp]\n");
+                file_content.push_str("    add rbp, 8\n");
+                file_content.push_str("    mov rdi, QWORD[rbp]\n");
+                file_content.push_str("    add rbp, 8\n");
+                file_content.push_str("    mov rsi, QWORD[rbp]\n");
+                file_content.push_str("    add rbp, 8\n");
+                file_content.push_str("    mov rdx, QWORD[rbp]\n");
+                file_content.push_str("    syscall\n");
+                
+            }
+
+            '\''=>{ // clear current cell
+                file_content.push_str("   mov rax, mem\n");
+                file_content.push_str("   add rax, QWORD[pointer]\n");
+                file_content.push_str("   mov BYTE[rax], 0\n");
+            }
+
             '+'=>{
                 file_content.push_str("    mov rax, mem\n");
                 file_content.push_str("    add rax, QWORD[pointer]\n");
@@ -221,7 +252,7 @@ fn main() {
 
 
     // create a new file
-    let path = format!("{}", filename.replace(".bfp", ".asm"));
+    let path = format!("{}", filename.replace(".bf", ".asm"));
     let path = Path::new(&path);
     let display = path.display();
 
@@ -238,15 +269,15 @@ fn main() {
     std::process::Command::new("nasm")
         .arg("-felf64")
         .arg("-g")
-        .arg(&format!("{}", filename.replace(".bfp", ".asm")))
+        .arg(&format!("{}", filename.replace(".bf", ".asm")))
         .output()
         .expect("failed to execute process");
 
     // use ld to link
     std::process::Command::new("ld")
         .arg("-o")
-        .arg(&format!("{}", filename.replace(".bfp", "")))
-        .arg(&format!("{}", filename.replace(".bfp", ".o")))
+        .arg(&format!("{}", filename.replace(".bf", "")))
+        .arg(&format!("{}", filename.replace(".bf", ".o")))
         .output()
         .expect("failed to execute process");
 
