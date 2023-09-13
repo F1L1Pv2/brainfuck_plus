@@ -122,7 +122,7 @@ fn main() {
 
                 // file_content.push_str("    sub QWORD[pointer], 1\n");
             }
-            '$'=>{
+            '$'=>{ // put current mem addr into cell
                 file_content.push_str(format!("debug_mem_{}:\n",mem_dbg_ln).as_str());
                 file_content.push_str("    mov rax, mem\n");
                 file_content.push_str("    add rax, QWORD[pointer]\n");
@@ -131,8 +131,19 @@ fn main() {
                 mem_dbg_ln +=1 ;
             }
 
+            '%' => { // put base mem addr into cell
+                file_content.push_str("    mov rax, mem\n");
+                file_content.push_str("    add rax, QWORD[pointer]\n");
+                file_content.push_str("    mov rbx, mem\n");
+                file_content.push_str("    mov QWORD[rax], rbx\n");
+            }
 
-            '?'=>{
+            '&' => { // set pointer to 0
+                file_content.push_str("    mov QWORD[pointer], 0\n");
+            }
+
+
+            '?'=>{ // perform syscall
                 file_content.push_str("    mov rbp, mem\n");
                 file_content.push_str("    add rbp, QWORD[pointer]\n");
                 file_content.push_str("    mov rax, QWORD[rbp]\n");

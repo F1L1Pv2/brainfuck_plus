@@ -23,6 +23,8 @@ Cells are `short unsigned ints` `(u8)`
 - `'` clear current cell (set 0)
 - `?` perform a syscall (look at examples to get better idea)
 - `$` put current cell's memmory adress into that cell
+- `%` put base memmory address into current cell
+- `&` reset pointer (set it to 0)
 
 **One thing to remember depending on your machine data could be in little or in big endian**
 
