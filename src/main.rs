@@ -5,6 +5,18 @@ use std::fs::File;
 use std::path::Path;
 use std::process::exit;
 
+
+pub mod common;
+use common::MEM_SIZE;
+
+pub mod code_gen;
+use code_gen::generate_code;
+
+pub mod preprocess;
+use preprocess::trim_comments;
+
+use crate::preprocess::detect_and_trim_macros;
+
 fn main() {
     // read the file contents into a string from args
     let args: Vec<String> = env::args().collect();
@@ -27,320 +39,38 @@ fn main() {
 
 
     let mut file_content: String = String::new();
+
+    //Boilerplate
     file_content.push_str("BITS 64\n");
     file_content.push_str("section .text\n");
     file_content.push_str("global _start\n");
     file_content.push_str("_start:\n");
 
-    let len = contents.len();
-
-    #[derive(PartialEq, Debug)]
-    struct Condition{
-        addr: usize,
-    }
-
-    #[derive(PartialEq, Debug)]
-    struct Forward{
-        back_addr: usize
-    }
-
-    #[derive(PartialEq, Debug)]
-    enum Jumps{
-        Condition(Condition),
-        Forward(Forward)
-    }
-
-    //preprocessing source code
-    let mut i: usize = 0;
-    let mut new_source_code = String::new();
-
-    let mut comments_mul = false;
-    let mut comments_single = false;
-
-
     // removing comments
-    while i<len{
-        let ch = contents.chars().nth(i).unwrap();
-        let next_ch;
-        if i+1<len{
-            next_ch = contents.chars().nth(i+1).unwrap();
-        }else{
-            next_ch = '\0';
-        }
-        let checker = ch.to_string() + next_ch.to_string().as_str();
+    let contents = trim_comments(contents);
+    let contents = detect_and_trim_macros(contents);
+    
+    //TODO: apply macros
 
-        if !comments_mul && !comments_single {
-            
-            match checker.as_str() {
-                "/*"=>{
-                    
-                    comments_mul = true;
-                    
-                    i+=2;
-                    continue;
-                }
-                "//"=>{
+    //generate code for each command
+    generate_code(contents, &mut file_content);
 
-                    comments_single = true;
-
-                    i+=2;
-                    continue;
-                }
-                _=>{}
-            }
-            
-            new_source_code += ch.to_string().as_str();
-            i+=1;
-        }else{
-            if comments_mul {
-                if checker == "*/"{
-                    comments_mul = false;
-                    comments_single = false;
-                    i+=2;
-                }else{
-                    i+=1;
-                }
-            }
-
-            if comments_single {
-                if ch == '\n'{
-                    comments_mul = false;
-                    comments_single = false;
-                    i+=1;
-                }else{
-                    i+=1;
-                }
-            }
-
-        }
-
-    }
-
-    let contents = new_source_code;
-    let len = contents.len();
-
-    // println!("{contents}");
-    // exit(1);
-
-
-    let mut jumps: Vec<Jumps> = Vec::new();
-
-    //cross reference
-    for i in 0..len{
-        let ch = contents.chars().nth(i).unwrap();
-        match ch{
-            '['=>{
-                jumps.push(Jumps::Condition(Condition { addr: 0 }));
-            }
-            ']'=>{
-                let len = jumps.len();
-                
-                //find the last condition
-                let mut last_condition = 0;
-                for j in (0..len).rev(){
-                    if jumps[j] == Jumps::Condition(Condition { addr: 0 }){
-                        last_condition = j;
-                        break;
-                    }
-                }
-
-                //set the address of the condition
-                match jumps[last_condition]{
-                    Jumps::Condition(ref mut condition) => {
-                        condition.addr = len;
-                    }
-                    _=>{}
-                }
-
-                //set the address of the forward to last condition
-                jumps.push(Jumps::Forward(Forward { back_addr: last_condition }));
-            }
-            _=>{}
-        }
-    }
-
-    let mut last_condition = 0;
-
-    let mem_size = 1024*1024;
-    let mut mem_dbg_ln = 0;
-
-    for i in 0..len{
-        let ch = contents.chars().nth(i).unwrap();
-
-        match ch{
-            '>'=>{
-                // file_content.push_str("    add QWORD[pointer], 1\n");
-
-                //check if pointer is at the end
-                file_content.push_str(format!("    cmp QWORD[pointer], {}\n", mem_size-1).as_str());
-                file_content.push_str(format!("    je bound_{}\n",i).as_str());
-                file_content.push_str("    add QWORD[pointer], 1\n");
-                file_content.push_str(format!("    jmp skip_{}\n",i).as_str());
-                file_content.push_str(format!("bound_{}:\n",i).as_str());
-                file_content.push_str("    mov QWORD[pointer], 0\n");
-                file_content.push_str(format!("skip_{}:\n",i).as_str());
-            }
-            '<'=>{
-
-                //check if pointer is zero
-                file_content.push_str("    cmp QWORD[pointer], 0\n");
-                file_content.push_str(format!("    je bound_{}\n",i).as_str());
-                file_content.push_str("    sub QWORD[pointer], 1\n");
-                file_content.push_str(format!("    jmp skip_{}\n",i).as_str());
-                file_content.push_str(format!("bound_{}:\n",i).as_str());
-                file_content.push_str(format!("    mov QWORD[pointer], {}\n", mem_size-1).as_str());
-                file_content.push_str(format!("skip_{}:\n",i).as_str());
-
-
-
-                // file_content.push_str("    sub QWORD[pointer], 1\n");
-            }
-            '$'=>{ // put current mem addr into cell
-                file_content.push_str(format!("debug_mem_{}:\n",mem_dbg_ln).as_str());
-                file_content.push_str("    mov rax, mem\n");
-                file_content.push_str("    add rax, QWORD[pointer]\n");
-                file_content.push_str("    mov rbx, rax\n");
-                file_content.push_str("    mov QWORD[rax], rbx\n");
-                mem_dbg_ln +=1 ;
-            }
-
-            '%' => { // put base mem addr into cell
-                file_content.push_str("    mov rax, mem\n");
-                file_content.push_str("    add rax, QWORD[pointer]\n");
-                file_content.push_str("    mov rbx, mem\n");
-                file_content.push_str("    mov QWORD[rax], rbx\n");
-            }
-
-            '&' => { // set pointer to 0
-                file_content.push_str("    mov QWORD[pointer], 0\n");
-            }
-
-
-            '?'=>{ // perform syscall
-                file_content.push_str("    mov rbp, mem\n");
-                file_content.push_str("    add rbp, QWORD[pointer]\n");
-                file_content.push_str("    mov rax, QWORD[rbp]\n");
-                file_content.push_str("    add rbp, 8\n");
-                file_content.push_str("    mov rdi, QWORD[rbp]\n");
-                file_content.push_str("    add rbp, 8\n");
-                file_content.push_str("    mov rsi, QWORD[rbp]\n");
-                file_content.push_str("    add rbp, 8\n");
-                file_content.push_str("    mov rdx, QWORD[rbp]\n");
-                file_content.push_str("    syscall\n");
-                
-            }
-
-            '\''=>{ // clear current cell
-                file_content.push_str("   mov rax, mem\n");
-                file_content.push_str("   add rax, QWORD[pointer]\n");
-                file_content.push_str("   mov BYTE[rax], 0\n");
-            }
-
-            '+'=>{
-                file_content.push_str("    mov rax, mem\n");
-                file_content.push_str("    add rax, QWORD[pointer]\n");
-                file_content.push_str("    add BYTE [rax], 1\n");
-            }
-            '-'=>{
-                file_content.push_str("    mov rax, mem\n");
-                file_content.push_str("    add rax, QWORD[pointer]\n");
-                file_content.push_str("    sub BYTE [rax], 1\n");
-            }
-            '.'=>{
-                file_content.push_str("    mov rax, 1\n");
-                file_content.push_str("    mov rdi, 1\n");
-                file_content.push_str("    mov rsi, mem\n");
-                file_content.push_str("    add rsi, QWORD[pointer]\n");
-                file_content.push_str("    mov rdx, 1\n");
-                file_content.push_str("    syscall\n");
-            }
-            ','=>{
-                file_content.push_str("    mov rax, 0\n");
-                file_content.push_str("    mov rdi, 0\n");
-                file_content.push_str("    mov rsi, mem\n");
-                file_content.push_str("    add rsi, QWORD[pointer]\n");
-                file_content.push_str("    mov rdx, 1\n");
-                file_content.push_str("    syscall\n");
-            }
-            '['=>{
-                file_content.push_str("    mov rax, mem\n");
-                file_content.push_str("    add rax, QWORD[pointer]\n");
-                file_content.push_str("    mov al, byte[rax]\n");
-                file_content.push_str("    cmp al, 0\n");
-
-                let mut condition_id = 0;
-                for j in last_condition..len{
-                    if matches!(jumps[j], Jumps::Condition(_)){
-                        condition_id = j;
-                        break;
-                    }
-                }
-
-                last_condition = condition_id+1;
-
-                let condition = match jumps[condition_id]{
-                    Jumps::Condition(ref condition) => {
-                        condition
-                    }
-                    _=>{panic!("condition not found")}
-                };
-
-                let forward_id = condition.addr;
-
-                file_content.push_str(format!("    je forward_{}\n",forward_id).as_str());
-                file_content.push_str(format!("condition_{}:\n",condition_id).as_str());
-
-            }
-            ']'=>{
-                file_content.push_str("    mov rax, mem\n");
-                file_content.push_str("    add rax, QWORD[pointer]\n");
-                file_content.push_str("    mov al, byte[rax]\n");
-                file_content.push_str("    cmp al, 0\n");
-
-                let mut forward_id = 0;
-                for j in last_condition..len{
-                    if matches!(jumps[j], Jumps::Forward(_)){
-                        forward_id = j;
-                        break;
-                    }
-                }
-
-                last_condition = forward_id+1;
-
-                let forward = match jumps[forward_id]{
-                    Jumps::Forward(ref forward) => {
-                        forward
-                    }
-                    _=>{panic!("forward not found")}
-                };
-
-                let condition_id = forward.back_addr;
-
-                file_content.push_str(format!("    jne condition_{}\n",condition_id).as_str());
-                file_content.push_str(format!("forward_{}:\n",forward_id).as_str());
-
-
-            }
-            _=>{}
-        }
-
-    }
-
+    // Rest of boilerplate
     file_content.push_str("    mov rax, 60\n");
     file_content.push_str("    mov rdi, 0\n");
     file_content.push_str("    syscall\n");
 
     file_content.push_str("section .bss\n");
     file_content.push_str("    pointer: resb 8\n");
-    file_content.push_str(format!("    mem: resb {} \n", mem_size).as_str());
+    file_content.push_str(format!("    mem: resb {} \n", MEM_SIZE).as_str());
 
 
     // create a new file
-    let path = format!("{}", filename.replace(".bf", ".asm"));
+    let path = filename.replace(".bf", ".asm");
     let path = Path::new(&path);
     let display = path.display();
 
-    let mut file = match File::create(&path){
+    let mut file = match File::create(path){
         Err(why) => panic!("Couldn't create {}: {}", display, why),
         Ok(file) => file,
     };
@@ -353,15 +83,15 @@ fn main() {
     std::process::Command::new("nasm")
         .arg("-felf64")
         .arg("-g")
-        .arg(&format!("{}", filename.replace(".bf", ".asm")))
+        .arg(&filename.replace(".bf", ".asm"))
         .output()
         .expect("failed to execute process");
 
     // use ld to link
     std::process::Command::new("ld")
         .arg("-o")
-        .arg(&format!("{}", filename.replace(".bf", "")))
-        .arg(&format!("{}", filename.replace(".bf", ".o")))
+        .arg(&filename.replace(".bf", ""))
+        .arg(&filename.replace(".bf", ".o"))
         .output()
         .expect("failed to execute process");
 

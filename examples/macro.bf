@@ -1,0 +1,3 @@
+#define QR ++++++++
+
+QR QR
