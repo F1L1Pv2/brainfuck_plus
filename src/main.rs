@@ -50,6 +50,79 @@ fn main() {
         Forward(Forward)
     }
 
+    //preprocessing source code
+    let mut i: usize = 0;
+    let mut new_source_code = String::new();
+
+    let mut comments_mul = false;
+    let mut comments_single = false;
+
+
+    // removing comments
+    while i<len{
+        let ch = contents.chars().nth(i).unwrap();
+        let next_ch;
+        if i+1<len{
+            next_ch = contents.chars().nth(i+1).unwrap();
+        }else{
+            next_ch = '\0';
+        }
+        let checker = ch.to_string() + next_ch.to_string().as_str();
+
+        if !comments_mul && !comments_single {
+            
+            match checker.as_str() {
+                "/*"=>{
+                    
+                    comments_mul = true;
+                    
+                    i+=2;
+                    continue;
+                }
+                "//"=>{
+
+                    comments_single = true;
+
+                    i+=2;
+                    continue;
+                }
+                _=>{}
+            }
+            
+            new_source_code += ch.to_string().as_str();
+            i+=1;
+        }else{
+            if comments_mul {
+                if checker == "*/"{
+                    comments_mul = false;
+                    comments_single = false;
+                    i+=2;
+                }else{
+                    i+=1;
+                }
+            }
+
+            if comments_single {
+                if ch == '\n'{
+                    comments_mul = false;
+                    comments_single = false;
+                    i+=1;
+                }else{
+                    i+=1;
+                }
+            }
+
+        }
+
+    }
+
+    let contents = new_source_code;
+    let len = contents.len();
+
+    // println!("{contents}");
+    // exit(1);
+
+
     let mut jumps: Vec<Jumps> = Vec::new();
 
     //cross reference
