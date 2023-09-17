@@ -1,21 +1,21 @@
-use std::fs;
 use std::env;
-use std::io::Write;
+use std::fs;
 use std::fs::File;
+use std::io::Write;
 use std::path::Path;
 use std::process::exit;
 
-
 pub mod common;
-use common::MEM_SIZE;
+use common::*;
+
+pub mod lexer;
+use lexer::lex_file;
 
 pub mod code_gen;
-use code_gen::generate_code;
+use crate::code_gen::generate_code;
 
 pub mod preprocess;
-use preprocess::trim_comments;
-
-use crate::preprocess::detect_and_trim_macros;
+use preprocess::*;
 
 fn main() {
     // read the file contents into a string from args
@@ -29,14 +29,12 @@ fn main() {
     let filename = &args[1];
 
     //check if extension is .bf
-    if !filename.ends_with(".bf"){
+    if !filename.ends_with(".bf") {
         println!("Brain fuck plus files must have .bf extension");
         exit(1);
     }
 
-    let contents = fs::read_to_string(filename)
-        .expect("Something went wrong reading the file");
-
+    let contents = fs::read_to_string(filename).expect("Something went wrong reading the file");
 
     let mut file_content: String = String::new();
 
@@ -46,14 +44,8 @@ fn main() {
     file_content.push_str("global _start\n");
     file_content.push_str("_start:\n");
 
-    // removing comments
-    let contents = trim_comments(contents);
-    let contents = detect_and_trim_macros(contents);
-    
-    //TODO: apply macros
-
-    //generate code for each command
-    generate_code(contents, &mut file_content);
+    let tokens = preprocess_tokens(lex_file(contents));
+    generate_code(tokens, &mut file_content);
 
     // Rest of boilerplate
     file_content.push_str("    mov rax, 60\n");
@@ -64,18 +56,17 @@ fn main() {
     file_content.push_str("    pointer: resb 8\n");
     file_content.push_str(format!("    mem: resb {} \n", MEM_SIZE).as_str());
 
-
     // create a new file
     let path = filename.replace(".bf", ".asm");
     let path = Path::new(&path);
     let display = path.display();
 
-    let mut file = match File::create(path){
+    let mut file = match File::create(path) {
         Err(why) => panic!("Couldn't create {}: {}", display, why),
         Ok(file) => file,
     };
 
-    match file.write_all(file_content.as_bytes()){
+    match file.write_all(file_content.as_bytes()) {
         Err(why) => panic!("Couldn't write to {}: {}", display, why),
         Ok(_) => println!("Successfully wrote to {}", display),
     }
@@ -91,6 +82,17 @@ fn main() {
     std::process::Command::new("ld")
         .arg("-o")
         .arg(&filename.replace(".bf", ""))
+        .arg(&filename.replace(".bf", ".o"))
+        .output()
+        .expect("failed to execute process");
+
+    #[cfg(not(debug_assertions))]
+    std::process::Command::new("rm")
+        .arg(&filename.replace(".bf", ".asm"))
+        .output()
+        .expect("failed to execute process");
+
+    std::process::Command::new("rm")
         .arg(&filename.replace(".bf", ".o"))
         .output()
         .expect("failed to execute process");
