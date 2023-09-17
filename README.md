@@ -32,8 +32,11 @@ Cells are `short unsigned ints` `(u8)`
 - [x] Write Nasm ELF 64 compiler
 - [ ] Optimize compiler
 - [x] Add ability to perform syscalls
-- [ ] Add macros
+- [x] Add macros
 - [ ] Add str char and numbers literals into bf+
 - [ ] Add labels and ability to jmp
 - [ ] If possible rewrite bf+ in itself
 - [ ] Add Windows support (somehow)
+- [ ] Add Push Pop Stack Operation
+- [ ] Add bitwise operations
+- [ ] Add ability to create multiple mem lines and ability to specify their cell size and max len (in cells)
