@@ -1,3 +1,5 @@
-#define QR ++++++++
+#define QR ++
+#define LR >>QR<<
 
-QR QR
+
+LR

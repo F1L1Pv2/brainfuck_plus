@@ -120,12 +120,13 @@ pub fn lex_file(contents: String) -> Vec<Token> {
                     _ => {
                         // println!("unexpected token: {}", ch);
                         if !ch.is_whitespace() {
-                            if !(ch == '`'){
+                            if ch != '`'{
                                 // println!("Unexpected token: {}", ch);
                                 // println!("Idents and Macros not implemented yet");
                                 let mut word: String = String::new();
-                                let nexty_ch = contents.chars().nth(i);
-                                while !contents.chars().nth(i).unwrap().is_whitespace(){
+                                // let nexty_ch = contents.chars().nth(i);
+                                while contents.chars().nth(i).unwrap().is_alphabetic() || contents.chars().nth(i).unwrap() == '#'{
+                                    // print!("{}", contents.chars().nth(i).unwrap());
                                     // println!("{}",contents.chars().nth(i).unwrap());
                                     word += contents.chars().nth(i).unwrap().to_string().as_str();
                                     i+=1;
@@ -133,6 +134,7 @@ pub fn lex_file(contents: String) -> Vec<Token> {
                                         break;
                                     }
                                 }
+                                // println!("");
 
                                 // println!("Word: \"{}\"", word);
                                 if word == "#define"{

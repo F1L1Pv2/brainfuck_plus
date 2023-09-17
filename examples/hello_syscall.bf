@@ -1,4 +1,7 @@
->>>>>>>> >>>>>>>> >>>>>>>> >>>>>>>>
+#define QR >>>>>>>> // move pointer by a QWORD
+#define QA ++++++++ // add QWORD size
+
+QR QR QR QR
 
 '++++++++++ ++++++++++ ++++++++++ ++++++++++ ++++++++++ ++++++++++ ++++++++++ ++
 > //H
@@ -31,13 +34,11 @@
 & //go back to addr 0
 
 '+ //putting write syscall id 1 into rax
->>>>>>>>
+QR
 '+ //putting stdout id 1 into rdi
->>>>>>>>
-'$ ++++++++ ++++++++ //putting msg addr into rsi
->>>>>>>>
+QR
+'$ QA QA //putting msg addr into rsi
+QR
 '+++++ +++++ ++++ //putting msg len into rdx
 
-&
-
-? //performing syscall
+&? //performing syscall

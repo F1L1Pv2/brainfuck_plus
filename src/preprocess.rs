@@ -59,16 +59,15 @@ fn detect_macros(tokens: &Vec<Token>) -> (Vec<Macro>, Vec<Token>) {
     (macros, next_tokens)
 }
 
-fn is_macro(name: String, macros: &Vec<Macro>) -> Option<Macro>{
-    let mut macrom: Option<Macro> = None;
+pub fn is_macro(name: String, macros: &[Macro]) -> Option<Macro>{
+    let mut macroms: Option<Macro> = None;
     for macrom in macros.iter(){
         if name == macrom.name{
-            println!("Not implemented yet");
-            exit(1);
+            macroms = Some(macrom.clone());
             break;
         }
     }
-    macrom
+    macroms
 }
 
 fn unwrap_macro(uno_macro: Macro, macros: &Vec<Macro>)->Vec<Token>{
@@ -77,13 +76,14 @@ fn unwrap_macro(uno_macro: Macro, macros: &Vec<Macro>)->Vec<Token>{
         if token.token_type != TokenType::Ident {
             unwrap_token.push(token.clone());
         }else{
-            let nmacro = is_macro(token.value, macros);
+            let name = token.value.clone();
+            let nmacro = is_macro(name, macros);
             if nmacro.is_some(){
                 let nmacro = nmacro.unwrap();
                 let mut tokens = unwrap_macro(nmacro, macros);
                 unwrap_token.append(&mut tokens);
             }else{
-                println!("Undentifier Not defined");
+                println!("Unwrap Macros: Undentifier Not defined {}", token.value);
                 exit(1);
             }
         }
@@ -97,13 +97,14 @@ fn unwrap_macros(tokens: Vec<Token>, macros: Vec<Macro>)-> Vec<Token>{
     let len: usize = tokens.len();
     while i<len{
 
-        let token = tokens[i];
+        let token = tokens[i].clone();
 
         if !(token.token_type == TokenType::Ident){
             next_tokens.push(token);
-        }
+        }else{
 
-        let macrom = is_macro(token.value, &macros);
+        let name = token.value.clone();
+        let macrom = is_macro(name, &macros);
         if macrom.is_some(){
             let macrom = macrom.unwrap();
             let mut macro_tokens = unwrap_macro(macrom, &macros);
@@ -113,9 +114,10 @@ fn unwrap_macros(tokens: Vec<Token>, macros: Vec<Macro>)-> Vec<Token>{
             exit(1);
         }
 
+        }
+
 
         i+=1;
-        exit(1);
     }
 
     next_tokens
@@ -124,12 +126,18 @@ fn unwrap_macros(tokens: Vec<Token>, macros: Vec<Macro>)-> Vec<Token>{
 pub fn preprocess_tokens(tokens: Vec<Token>) -> Vec<Token> {
     // let mut new_tokens: Vec<Token> = Vec::new();
 
-    let (macros, mut new_tokens) = detect_macros(&tokens);
-    let new_tokens = unwrap_macros(tokens, macros);
+    let (macros, new_tokens) = detect_macros(&tokens);
+    unwrap_macros(new_tokens, macros)
+
+    // println!("--------------------");
+
+    // dbg!(&new_tokens);
+
+    // exit(1);
 
     // for token in tokens.iter() {
     //     new_tokens.push(token.clone());
     // }
 
-    new_tokens
+    // new_tokens
 }
