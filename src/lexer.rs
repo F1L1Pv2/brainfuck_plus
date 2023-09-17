@@ -120,9 +120,33 @@ pub fn lex_file(contents: String) -> Vec<Token> {
                     _ => {
                         // println!("unexpected token: {}", ch);
                         if !ch.is_whitespace() {
-                            println!("Unexpected token: {}", ch);
-                            println!("Idents and Macros not implemented yet");
-                            exit(1);
+                            if !(ch == '`'){
+                                // println!("Unexpected token: {}", ch);
+                                // println!("Idents and Macros not implemented yet");
+                                let mut word: String = String::new();
+                                let nexty_ch = contents.chars().nth(i);
+                                while !contents.chars().nth(i).unwrap().is_whitespace(){
+                                    // println!("{}",contents.chars().nth(i).unwrap());
+                                    word += contents.chars().nth(i).unwrap().to_string().as_str();
+                                    i+=1;
+                                    if contents.chars().nth(i).is_none(){
+                                        break;
+                                    }
+                                }
+
+                                // println!("Word: \"{}\"", word);
+                                if word == "#define"{
+                                    tokens.push(Token { token_type: TokenType::MacroDecl, value: word });
+                                    continue;
+                                }else{
+                                    tokens.push(Token { token_type: TokenType::Ident, value: word });
+                                    continue;
+                                }
+
+                            }else{
+                                println!("Literals arent supported yet");
+                                exit(1);
+                            }
                         }
                     }
                 },

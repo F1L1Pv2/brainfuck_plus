@@ -1,6 +1,6 @@
 pub const MEM_SIZE: usize = 1024 * 1024;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum TokenType{
     Ident, // names 
     MacroDecl, // #define
@@ -20,7 +20,7 @@ pub enum TokenType{
     NewLine, // \n
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token{
     pub token_type: TokenType,
     pub value: String

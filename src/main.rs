@@ -44,7 +44,8 @@ fn main() {
     file_content.push_str("global _start\n");
     file_content.push_str("_start:\n");
 
-    let tokens = preprocess_tokens(lex_file(contents));
+    let tokens = lex_file(contents);
+    let tokens = preprocess_tokens(tokens);
     generate_code(tokens, &mut file_content);
 
     // Rest of boilerplate

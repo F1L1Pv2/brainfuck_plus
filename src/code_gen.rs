@@ -1,4 +1,5 @@
 use crate::common::*;
+use std::process::exit;
 
 fn cross_reference(tokens: &[Token]) -> Vec<Jumps> {
     let mut jumps: Vec<Jumps> = Vec::new();
@@ -215,6 +216,14 @@ pub fn generate_code(tokens: Vec<Token>, file_content: &mut String) {
                 file_content.push_str(format!("forward_{}:\n", forward_id).as_str());
             }
             TokenType::NewLine => {}
+            TokenType::MacroDecl => {
+                println!("Macros are not implemented yet");
+                exit(1);
+            }
+            TokenType::Ident => {
+                println!("Idents are not implemented yet");
+                exit(1);
+            }
             _ => {
                 println!("Unreachable: Token {}", token.value);
             }
