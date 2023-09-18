@@ -18,6 +18,8 @@ pub enum TokenType{
     NonZeroJump, // ]
     Syscall, // ?
     NewLine, // \n
+    Push, // ^
+    Pop, // _
 }
 
 #[derive(Debug, Clone)]

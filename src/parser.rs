@@ -44,6 +44,14 @@ pub fn parse_file(tokens: Vec<Token>) -> Vec<Operation> {
                 operations.push(trim_tokens(&mut i, &tokens, token.token_type))
             }
 
+            TokenType::Push => {
+                operations.push(trim_tokens(&mut i, &tokens, token.token_type))
+            }
+
+            TokenType::Pop => {
+                operations.push(trim_tokens(&mut i, &tokens, token.token_type))
+            }
+
             _ => {
                 operations.push(Operation { token_type: token.token_type, count: 1 });
                 i += 1;

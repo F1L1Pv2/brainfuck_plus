@@ -13,7 +13,6 @@ use lexer::lex_file;
 
 pub mod code_gen;
 use crate::code_gen::generate_code;
-use crate::code_gen::generate_code_backup;
 use crate::parser::parse_file;
 
 pub mod preprocess;
@@ -51,7 +50,7 @@ fn main() {
     let tokens = lex_file(contents);
     let tokens = preprocess_tokens(tokens);
     let operations = parse_file(tokens);
-    
+
     generate_code(operations, &mut file_content);
 
     // generate_code_backup(tokens, &mut file_content);

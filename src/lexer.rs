@@ -104,6 +104,20 @@ pub fn lex_file(contents: String) -> Vec<Token> {
                     });
                 }
 
+                '^' => {
+                    tokens.push(Token {
+                        token_type: TokenType::Push,
+                        value: ch.to_string(),
+                    });
+                }
+
+                '_' => {
+                    tokens.push(Token {
+                        token_type: TokenType::Pop,
+                        value: ch.to_string(),
+                    });
+                }
+
                 _ => match checker.as_str() {
                     "//" => {
                         // println!("[Single Line Comment: ");

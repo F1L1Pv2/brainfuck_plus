@@ -25,6 +25,8 @@ Cells are `short unsigned ints` `(u8)`
 - `$` put current cell's memmory adress into that cell
 - `%` put base memmory address into current cell
 - `&` reset pointer (set it to 0)
+- `^` push current cell into stack
+- `_` pop from stack into current cell
 
 **One thing to remember depending on your machine data could be in little or in big endian**
 
@@ -37,6 +39,6 @@ Cells are `short unsigned ints` `(u8)`
 - [ ] Add labels and ability to jmp
 - [ ] If possible rewrite bf+ in itself
 - [ ] Add Windows support (somehow)
-- [ ] Add Push Pop Stack Operation
+- [x] Add Push Pop Stack Operation
 - [ ] Add bitwise operations
 - [ ] Add ability to create multiple mem lines and ability to specify their cell size and max len (in cells)
