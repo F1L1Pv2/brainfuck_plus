@@ -41,3 +41,9 @@ pub enum Jumps {
     Condition(Condition),
     Forward(Forward),
 }
+
+#[derive(Debug)]
+pub struct Operation{
+    pub token_type: TokenType,
+    pub count: usize
+}

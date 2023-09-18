@@ -13,9 +13,13 @@ use lexer::lex_file;
 
 pub mod code_gen;
 use crate::code_gen::generate_code;
+use crate::code_gen::generate_code_backup;
+use crate::parser::parse_file;
 
 pub mod preprocess;
 use preprocess::*;
+
+pub mod parser;
 
 fn main() {
     // read the file contents into a string from args
@@ -46,7 +50,11 @@ fn main() {
 
     let tokens = lex_file(contents);
     let tokens = preprocess_tokens(tokens);
-    generate_code(tokens, &mut file_content);
+    let operations = parse_file(tokens);
+    
+    generate_code(operations, &mut file_content);
+
+    // generate_code_backup(tokens, &mut file_content);
 
     // Rest of boilerplate
     file_content.push_str("    mov rax, 60\n");
