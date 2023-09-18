@@ -78,8 +78,9 @@ fn unwrap_macro(uno_macro: Macro, macros: &Vec<Macro>)->Vec<Token>{
         }else{
             let name = token.value.clone();
             let nmacro = is_macro(name, macros);
-            if nmacro.is_some(){
-                let nmacro = nmacro.unwrap();
+            if let Some(nmacro) = nmacro{
+            // if nmacro.is_some(){
+                // let nmacro = nmacro.unwrap();
                 let mut tokens = unwrap_macro(nmacro, macros);
                 unwrap_token.append(&mut tokens);
             }else{
@@ -105,8 +106,9 @@ fn unwrap_macros(tokens: Vec<Token>, macros: Vec<Macro>)-> Vec<Token>{
 
         let name = token.value.clone();
         let macrom = is_macro(name, &macros);
-        if macrom.is_some(){
-            let macrom = macrom.unwrap();
+        // if macrom.is_some(){
+        if let Some(macrom) = macrom {
+            // let macrom = macrom.unwrap();
             let mut macro_tokens = unwrap_macro(macrom, &macros);
             next_tokens.append(&mut macro_tokens);
         }else{

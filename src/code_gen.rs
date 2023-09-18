@@ -224,9 +224,9 @@ pub fn generate_code(tokens: Vec<Token>, file_content: &mut String) {
                 println!("Idents are not implemented yet");
                 exit(1);
             }
-            _ => {
-                println!("Unreachable: Token {}", token.value);
-            }
+            // _ => {
+            //     println!("Unreachable: Token {}", token.value);
+            // }
         }
     }
 }
