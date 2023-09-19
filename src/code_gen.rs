@@ -127,15 +127,38 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String) {
                 file_content.push_str("   add rax, QWORD[pointer]\n");
                 file_content.push_str("   mov BYTE[rax], 0\n");
             }
-
+            
             // '+' => {
-            TokenType::Add => {
-                file_content.push_str("    mov rax, mem\n");
-                file_content.push_str("    add rax, QWORD[pointer]\n");
-                file_content.push_str(format!("    add BYTE [rax], {}\n",operation.count).as_str());
-            }
+                TokenType::Add => {
+                    file_content.push_str("    mov rax, mem\n");
+                    file_content.push_str("    add rax, QWORD[pointer]\n");
+                    file_content.push_str(format!("    add BYTE [rax], {}\n",operation.count).as_str());
+                }
+                
+                TokenType::IntLit => {
+                    // println!("Not implemented yet");
+                    // exit(1);
+                    file_content.push_str("    mov rax, mem\n");
+                    file_content.push_str("    add rax, QWORD[pointer]\n");
+                    file_content.push_str(format!("    mov BYTE [rax], {}\n",operation.values[0]).as_str());
+                }
+                
+                TokenType::StringLit => {
+                    file_content.push_str("    mov rax, mem\n");
+                    file_content.push_str("    add rax, QWORD[pointer]\n");
+                    
+                    let str_val = operation.values[0].clone();
+                    let len = str_val.len();
+                    for n in 0..len{
+                        let val = str_val.chars().nth(n).unwrap();
+                        file_content.push_str(format!("    mov BYTE [rax], {}\n",val as u8).as_str());
+                        file_content.push_str("    add rax, 1\n");
+                    }
 
-            TokenType::Push => {
+
+                }
+
+                TokenType::Push => {
                 file_content.push_str("    mov rax, mem\n");
                 file_content.push_str("    add rax, QWORD[pointer]\n");
                 file_content.push_str("    mov rbx, 0\n");
@@ -246,6 +269,7 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String) {
                 println!("Idents are not implemented yet");
                 exit(1);
             }
+
             // _ => {
             //     println!("Unreachable: Token {}", token.value);
             // }

@@ -48,6 +48,7 @@ fn main() {
     file_content.push_str("_start:\n");
 
     let tokens = lex_file(contents);
+    // dbg!(&tokens);
     let tokens = preprocess_tokens(tokens);
     let operations = parse_file(tokens);
 

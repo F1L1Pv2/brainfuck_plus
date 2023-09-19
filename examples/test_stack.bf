@@ -1,8 +1,4 @@
-'++++++++++ // put ascii value of "0" onto stack
-++++++++++
-++++++++++
-++++++++++
-++++++++
+'`"0"` // put ascii value of "0" onto stack
 ^
 '// clear current cell
 

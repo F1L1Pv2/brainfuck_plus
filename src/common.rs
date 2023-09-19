@@ -20,6 +20,8 @@ pub enum TokenType{
     NewLine, // \n
     Push, // ^
     Pop, // _
+    IntLit, // 0123
+    StringLit, // "baller"
 }
 
 #[derive(Debug, Clone)]
@@ -47,5 +49,6 @@ pub enum Jumps {
 #[derive(Debug)]
 pub struct Operation{
     pub token_type: TokenType,
-    pub count: usize
+    pub count: usize,
+    pub values: Vec<String>
 }

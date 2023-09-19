@@ -7,15 +7,18 @@ fn trim_tokens(i: &mut usize, tokens: &Vec<Token>, token_type: TokenType) -> Ope
     
     let len: usize = tokens.len();
 
+    let mut values: Vec<String> = Vec::new();
+
     while tokens[*i].token_type == token_type{
         count += 1;
         *i+=1;
+        values.push(tokens[*i].value.clone());
         if *i>=len{
             break;
         }
     }
 
-    Operation { token_type, count }
+    Operation { token_type, count, values}
 }
 
 pub fn parse_file(tokens: Vec<Token>) -> Vec<Operation> {
@@ -53,7 +56,7 @@ pub fn parse_file(tokens: Vec<Token>) -> Vec<Operation> {
             }
 
             _ => {
-                operations.push(Operation { token_type: token.token_type, count: 1 });
+                operations.push(Operation { token_type: token.token_type, count: 1, values: vec![token.value]});
                 i += 1;
             }
         }

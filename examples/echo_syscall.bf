@@ -3,17 +3,17 @@
 
 
 //Read syscall
-'        //rax 0
+`0`        //rax 0
 QR
-'        //rdi 0
+`0`        //rdi 0
 QR
 '$ QA QA //rsi pionter plus 16
 QR
-'++++++++++ ++++++++++ ++++++++++ ++++++++++ ++++++++++ ++++++++++ ++++ //rdx 64
+`64` //rdx 64
 &?
 
 //Write syscall
-'+        //rax 1 
+`1`        //rax 1 
 QR
-'+        //rdi 1
+`1`        //rdi 1
 &?

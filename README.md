@@ -6,7 +6,7 @@
 
 
 ## Instructions
-Cells are `short unsigned ints` `(u8)`
+Cells are `short unsigned ints` `(u8)` (for now)
 #### Original instructions
 
 - `<` moves pointer to the left (wraps around in case of underflow)
@@ -35,7 +35,7 @@ Cells are `short unsigned ints` `(u8)`
 - [ ] Optimize compiler
 - [x] Add ability to perform syscalls
 - [x] Add macros
-- [ ] Add str char and numbers literals into bf+
+- [x] Add str char and numbers literals into bf+
 - [ ] Add labels and ability to jmp
 - [ ] If possible rewrite bf+ in itself
 - [ ] Add Windows support (somehow)

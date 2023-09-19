@@ -160,8 +160,61 @@ pub fn lex_file(contents: String) -> Vec<Token> {
                                 }
 
                             }else{
-                                println!("Literals arent supported yet");
-                                exit(1);
+
+                                let mut word: String = String::new();
+
+                                i+=1;
+                                // let nexty_ch = contents.chars().nth(i);
+                                while contents.chars().nth(i).unwrap() != '`'{
+
+
+
+                                    // print!("{}", contents.chars().nth(i).unwrap());
+                                    // println!("{}",contents.chars().nth(i).unwrap());
+                                    word += contents.chars().nth(i).unwrap().to_string().as_str();
+                                    i+=1;
+                                    if contents.chars().nth(i).is_none(){
+                                        break;
+                                    }
+                                }
+
+                                if word.starts_with("\""){
+                                    if word.ends_with("\""){
+                                        let mut new_str: String = String::new();
+                                        let len:usize = word.len()-1;
+                                        for n in 1..len{
+                                            let ch = word.chars().nth(n).unwrap().to_string();
+                                            new_str += ch.as_str();
+                                        }
+                                        tokens.push(Token { token_type: TokenType::StringLit, value: new_str.replace("\\n", "\n") });
+                                    }else{
+                                        println!("Expected \" at the end of string lit");
+                                        exit(1);
+                                    }
+                                }else{
+                                    let mut is_number = true;
+                                    for ch in word.chars(){
+                                        if !ch.is_digit(10){
+                                            is_number=false;
+                                            break;
+                                        }
+                                    }
+
+                                    if is_number {
+                                        tokens.push(Token { token_type: TokenType::IntLit, value: word });
+                                    }else{
+                                        println!("Expected int literal");
+                                        exit(1);
+                                    }
+                                }
+
+
+                                // println!("{}",word);
+
+                                // exit(1);
+
+                                // println!("Literals arent supported yet");
+                                // exit(1);
                             }
                         }
                     }
