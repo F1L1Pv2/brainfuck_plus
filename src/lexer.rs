@@ -139,7 +139,7 @@ pub fn lex_file(contents: String) -> Vec<Token> {
                                 // println!("Idents and Macros not implemented yet");
                                 let mut word: String = String::new();
                                 // let nexty_ch = contents.chars().nth(i);
-                                while contents.chars().nth(i).unwrap().is_alphabetic() || contents.chars().nth(i).unwrap() == '#'{
+                                while contents.chars().nth(i).unwrap().is_alphanumeric() || contents.chars().nth(i).unwrap() == '#'{
                                     // print!("{}", contents.chars().nth(i).unwrap());
                                     // println!("{}",contents.chars().nth(i).unwrap());
                                     word += contents.chars().nth(i).unwrap().to_string().as_str();
@@ -150,13 +150,43 @@ pub fn lex_file(contents: String) -> Vec<Token> {
                                 }
                                 // println!("");
 
+                                if word.is_empty(){
+                                    println!("Something fucked up in lexer");
+                                    println!("Len: {} i: {} char: {}",contents.len(), i, contents.chars().nth(i).unwrap());
+                                    exit(1);
+                                }
+
                                 // println!("Word: \"{}\"", word);
-                                if word == "#define"{
-                                    tokens.push(Token { token_type: TokenType::MacroDecl, value: word });
-                                    continue;
-                                }else{
-                                    tokens.push(Token { token_type: TokenType::Ident, value: word });
-                                    continue;
+                                match word.to_lowercase().as_str(){
+                                    "#define" => {
+                                        tokens.push(Token { token_type: TokenType::MacroDecl, value: word });
+                                        continue;
+                                    }
+                                    
+                                    "#ifdef" => {
+                                        tokens.push(Token { token_type: TokenType::IfdefMacro, value: word });
+                                        continue;
+                                    }
+                                    
+                                    "#ifndef" => {
+                                        tokens.push(Token { token_type: TokenType::IfNdefMacro, value: word });
+                                        continue;
+                                    }
+                                    
+                                    "#else" => {
+                                        tokens.push(Token { token_type: TokenType::ElseMacro, value: word });
+                                        continue;
+                                    }
+                                    
+                                    "#endif" => {
+                                        tokens.push(Token { token_type: TokenType::EndifMacro, value: word });
+                                        continue;
+                                    }
+                                    
+                                    _ =>{
+                                        tokens.push(Token { token_type: TokenType::Ident, value: word });
+                                        continue;
+                                    }
                                 }
 
                             }else{

@@ -262,7 +262,23 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String) {
             }
             TokenType::NewLine => {}
             TokenType::MacroDecl => {
-                println!("Unreachable Something with preprocessing is wrong");
+                println!("MacroDecl: Unreachable Something with preprocessing is wrong");
+                exit(1);
+            }
+            TokenType::IfdefMacro => {
+                println!("IfdefMacro: Unreachable Something with preprocessing is wrong");
+                exit(1);
+            }
+            TokenType::IfNdefMacro => {
+                println!("IfNdefMacro: Unreachable Something with preprocessing is wrong");
+                exit(1);
+            }
+            TokenType::ElseMacro => {
+                println!("ElseMacro: Unreachable Something with preprocessing is wrong");
+                exit(1);
+            }
+            TokenType::EndifMacro => {
+                println!("EndifMacro: Unreachable Something with preprocessing is wrong");
                 exit(1);
             }
             TokenType::Ident => {

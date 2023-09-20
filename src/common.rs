@@ -4,6 +4,10 @@ pub const MEM_SIZE: usize = 1024 * 1024;
 pub enum TokenType{
     Ident, // names 
     MacroDecl, // #define
+    IfdefMacro, // #ifdef
+    IfNdefMacro, // #ifndef
+    ElseMacro, // #else macro
+    EndifMacro, // #endif
     PointerLeft, // <
     PointerRight, // >
     PointerReset, // &

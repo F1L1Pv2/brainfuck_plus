@@ -32,7 +32,7 @@ Cells are `short unsigned ints` `(u8)` (for now)
 
 ### Todo
 - [x] Write Nasm ELF 64 compiler
-- [ ] Optimize compiler
+- [x] Optimize compiler (still a lot of bloat)
 - [x] Add ability to perform syscalls
 - [x] Add macros
 - [x] Add str char and numbers literals into bf+
@@ -42,3 +42,7 @@ Cells are `short unsigned ints` `(u8)` (for now)
 - [x] Add Push Pop Stack Operation
 - [ ] Add bitwise operations
 - [ ] Add ability to create multiple mem lines and ability to specify their cell size and max len (in cells)
+- [ ] Add Include and Libs to compiler
+- [ ] Add Ability to call extern functions
+- [ ] Add #include
+- [x] Add #ifdef #ifndef #else #endif 
