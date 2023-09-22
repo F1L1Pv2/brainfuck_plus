@@ -226,6 +226,19 @@ pub fn lex_file(contents: String) -> Vec<Token> {
                                         println!("Expected \" at the end of string lit");
                                         exit(1);
                                     }
+                                }else if word.starts_with('('){
+                                    if word.ends_with(')'){
+                                        let mut new_str: String = String::new();
+                                        let len:usize = word.len()-1;
+                                        for n in 1..len{
+                                            let ch = word.chars().nth(n).unwrap().to_string();
+                                            new_str += ch.as_str();
+                                        }
+                                        tokens.push(Token { token_type: TokenType::IncludePath, value: new_str });
+                                    }else{
+                                        println!("Expected \" at the end of string lit");
+                                        exit(1);
+                                    }
                                 }else{
                                     let mut is_number = true;
                                     for ch in word.chars(){

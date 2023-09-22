@@ -1,3 +1,3 @@
-#include `"ascii_lib.bf"`
+#include `(std_lib/ascii.bf)`
 
-+++ to_ascii .
++++ to_ascii_digit .

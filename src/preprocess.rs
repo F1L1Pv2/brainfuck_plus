@@ -1,6 +1,6 @@
-use std::arch::x86_64::_MM_FROUND_NO_EXC;
 use std::process::exit;
 use std::fs;
+use std::path::Path;
 use crate::lex_file;
 
 // use std::process::exit;
@@ -339,7 +339,8 @@ fn preprocess_include(
     tokens: &Vec<Token>,
     current_path: String,
     path: &String,
-    new_tokens: &mut Vec<Token>
+    new_tokens: &mut Vec<Token>,
+    includes: &Vec<String>
 ) {
     let token = tokens[*i].clone();
 
@@ -350,12 +351,56 @@ fn preprocess_include(
         *i += 1;
         let file_name: Token = tokens[*i].clone();
 
-        if file_name.token_type != TokenType::StringLit {
-            println!("IncludeDecl: Expected String Literal");
+        if file_name.token_type != TokenType::StringLit && file_name.token_type != TokenType::IncludePath {
+            println!("IncludeDecl: Expected String Literal or Include Path");
             exit(1);
         }
 
-        let filename: String = path.clone() + file_name.value.as_str();
+        *i += 1;
+
+        let filename: String = {
+            if file_name.token_type == TokenType::StringLit{
+                path.clone() + file_name.value.as_str()
+            }else{
+                let include_path: Vec<&str> = file_name.value.split("/").collect::<Vec<&str>>();
+                let len: usize = include_path.len()-1;
+                let mut exists: Option<String> = None;
+                for path in includes.iter(){
+                    let path_arr = path.split("/").collect::<Vec<&str>>();
+                    let path_len = path_arr.len();
+                    let mut path_str = {
+                        let mut path = String::new();
+                        for folder in path_arr.iter().take(path_len-len){
+                            path += folder;
+                            path += "/";
+                        }
+                        path
+                    };
+                    path_str += file_name.value.as_str();
+                    let path_path = Path::new(path_str.as_str());
+                    if path_path.exists(){
+                        exists = Some(path_str);
+                        break;
+                    }
+
+                    dbg!(&path_str);
+                }
+                let out;
+                if let Some(exists) = exists{
+                    out = exists;
+                }else{
+                    println!("Could not find include: {}",file_name.value);
+                    exit(1);
+                }
+
+                out
+                
+            }
+        };
+
+        // dbg!(&filename);
+
+        // exit(1);
 
         if filename == current_path {
             println!("IncludeDecl: Cannot include file in itself file: {}",filename);
@@ -379,12 +424,10 @@ fn preprocess_include(
                 new_tokens.push(token.clone());
                 file_i+=1;
             }else{
-                preprocess_include(&mut file_i, &file_tokens, filename.clone(), path, new_tokens);
+                preprocess_include(&mut file_i, &file_tokens, filename.clone(), path, new_tokens, includes);
             }
             
         }
-
-        *i += 1;
 
         // dbg!(file_tokens);
 
@@ -394,13 +437,13 @@ fn preprocess_include(
     }
 }
 
-fn include_includes(tokens: Vec<Token>, current_path: String, path: String) -> Vec<Token> {
+fn include_includes(tokens: Vec<Token>, current_path: String, path: String, includes: Vec<String>) -> Vec<Token> {
     let mut i: usize = 0;
     let len: usize = tokens.len();
     let mut new_tokens: Vec<Token> = Vec::new();
 
     while i < len {
-        preprocess_include(&mut i, &tokens,  current_path.clone(),&path, &mut new_tokens);
+        preprocess_include(&mut i, &tokens,  current_path.clone(),&path, &mut new_tokens, &includes);
     }
 
     // dbg!(&new_tokens);
@@ -408,7 +451,7 @@ fn include_includes(tokens: Vec<Token>, current_path: String, path: String) -> V
     new_tokens
 }
 
-pub fn preprocess_tokens(tokens: Vec<Token>, current_path: String, path: String) -> Vec<Token> {
+pub fn preprocess_tokens(tokens: Vec<Token>, current_path: String, path: String, includes: Vec<String>) -> Vec<Token> {
     //TODO: Add ability to pass arguments into macros
     /*
     
@@ -420,7 +463,7 @@ pub fn preprocess_tokens(tokens: Vec<Token>, current_path: String, path: String)
 
      */
 
-    let new_tokens = include_includes(tokens, current_path,path);
+    let new_tokens = include_includes(tokens, current_path,path, includes);
 
     let (new_tokens, macros) = preprocess_macros(new_tokens);
 

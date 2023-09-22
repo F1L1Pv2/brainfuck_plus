@@ -285,6 +285,11 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String) {
                 println!("IncludeMacro: Unreachable Something with preprocessing is wrong");
                 exit(1);
             }
+            TokenType::IncludePath => {
+                println!("IncludePath: Unreachable Something with preprocessing is wrong");
+                exit(1);
+            }
+            
             TokenType::OpenParen => {
                 println!("OpenParen: Not implemented yet!");
                 exit(1);

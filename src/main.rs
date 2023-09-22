@@ -20,16 +20,128 @@ use preprocess::*;
 
 pub mod parser;
 
+fn usage(filename: String) {
+
+    let mut arr = filename.split('/').collect::<Vec<&str>>();
+    arr.reverse();
+
+    println!("USAGE: {} <options> <filename>", arr[0]);
+    println!("-i | -I include folder path (add only one)");
+    println!("-l | -L libs folder path (add only one)");
+    println!("-o | -O out file name (if not provided bf+ will use name of file)");
+}
+
 fn main() {
     // read the file contents into a string from args
     let args: Vec<String> = env::args().collect();
 
-    if args.len() < 2 {
-        println!("USAGE: {} <filename>", args[0]);
+    let mut arg_i: usize = 1;
+    let argc: usize = args.len();
+    let mut filename: String = String::new();
+    let mut out_file_path: String = String::new();
+
+    let mut includes: Vec<String> = Vec::new();
+    let mut libs: Vec<String> = Vec::new();
+
+    let std_lib_path = {
+        let arr = args[0].split('/').collect::<Vec<&str>>();
+        let len = arr.len() - 1;
+        let mut out = String::new();
+
+        for folder in arr.iter().take(len){
+            out += folder;
+            out += "/";
+        }
+
+        out
+    };
+
+    includes.push(std_lib_path);
+
+    // dbg!(std_lib_path);
+
+    // exit(1);
+
+    // if args.len() < 2 {
+    //     println!("USAGE: {} <filename>", args[0]);
+    //     exit(1);
+    // }
+
+    while arg_i < argc{
+
+        let arg = args[arg_i].clone();
+
+        match arg.as_str(){
+
+            "-I" => {
+                arg_i += 1;
+                if arg_i < argc{
+                    includes.push(args[arg_i].clone())
+                }
+            }
+
+            "-i" => {
+                arg_i += 1;
+                if arg_i < argc{
+                    includes.push(args[arg_i].clone())
+                }
+            }
+
+            "-l" => {
+                arg_i += 1;
+                if arg_i < argc{
+                    libs.push(args[arg_i].clone())
+                }
+            }
+
+            "-L" => {
+                arg_i += 1;
+                if arg_i < argc{
+                    libs.push(args[arg_i].clone())
+                }
+            }
+
+            "-o" => {
+                arg_i += 1;
+                if arg_i < argc{
+                    out_file_path = args[arg_i].clone();
+                }
+            }
+
+            "-O" => {
+                arg_i += 1;
+                if arg_i < argc{
+                    out_file_path = args[arg_i].clone();
+                }
+            }
+
+            _ => {
+                filename = arg.clone();
+            }
+        }
+
+
+        arg_i+=1;
+    }
+
+
+    if libs.len() > 0{
+        usage(args[0].clone());
+        println!("Libs are not currently implemented");
         exit(1);
     }
 
-    let filename = &args[1];
+
+
+    if filename == String::new() {
+        usage(args[0].clone());
+        println!("Filename Wasn't provided");
+        exit(1);
+    }
+
+    if out_file_path == String::new() {
+        out_file_path = filename.replace(".bf", "");
+    }
 
     //check if extension is .bf
     if !filename.ends_with(".bf") {
@@ -37,14 +149,16 @@ fn main() {
         exit(1);
     }
 
-    let contents = fs::read_to_string(filename.clone()).expect("Something went wrong reading the file");
+    let contents = fs
+        ::read_to_string(filename.clone())
+        .expect("Something went wrong reading the file");
 
     let path: String = {
         let mut temp = String::new();
         let arr = filename.split('/').collect::<Vec<&str>>();
         let len = arr.len();
 
-        for folder in arr.iter().take(len-1){
+        for folder in arr.iter().take(len - 1) {
             temp += folder;
             temp += "/";
         }
@@ -53,8 +167,6 @@ fn main() {
     };
 
     // dbg!(path);
-
-    // exit(1);
 
     let mut file_content: String = String::new();
 
@@ -66,7 +178,7 @@ fn main() {
 
     let tokens = lex_file(contents);
     // dbg!(&tokens);
-    let tokens = preprocess_tokens(tokens, filename.clone(),path);
+    let tokens = preprocess_tokens(tokens, filename.clone(), path, includes);
     let operations = parse_file(tokens);
 
     generate_code(operations, &mut file_content);
@@ -97,7 +209,8 @@ fn main() {
         Ok(_) => println!("Successfully wrote to {}", display),
     }
 
-    std::process::Command::new("nasm")
+    std::process::Command
+        ::new("nasm")
         .arg("-felf64")
         .arg("-g")
         .arg(&filename.replace(".bf", ".asm"))
@@ -105,20 +218,23 @@ fn main() {
         .expect("failed to execute process");
 
     // use ld to link
-    std::process::Command::new("ld")
+    std::process::Command
+        ::new("ld")
         .arg("-o")
-        .arg(&filename.replace(".bf", ""))
+        .arg(&out_file_path)
         .arg(&filename.replace(".bf", ".o"))
         .output()
         .expect("failed to execute process");
 
     #[cfg(not(debug_assertions))]
-    std::process::Command::new("rm")
+    std::process::Command
+        ::new("rm")
         .arg(&filename.replace(".bf", ".asm"))
         .output()
         .expect("failed to execute process");
 
-    std::process::Command::new("rm")
+    std::process::Command
+        ::new("rm")
         .arg(&filename.replace(".bf", ".o"))
         .output()
         .expect("failed to execute process");

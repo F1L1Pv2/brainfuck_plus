@@ -29,6 +29,7 @@ pub enum TokenType{
     StringLit, // "baller"
     OpenParen, // (
     CloseParen, // )
+    IncludePath, // (std/loops.bf)
 }
 
 #[derive(Debug, Clone)]
