@@ -10,55 +10,6 @@ pub struct Macro {
     pub tokens: Vec<Token>,
 }
 
-fn detect_macros(tokens: &Vec<Token>) -> (Vec<Macro>, Vec<Token>) {
-    let mut i: usize = 0;
-    let len: usize = tokens.len();
-    let mut macros: Vec<Macro> = Vec::new();
-    let mut next_tokens: Vec<Token> = Vec::new();
-    while i < len {
-        let token = tokens[i].clone();
-        if token.token_type == TokenType::MacroDecl {
-            if token.value == "#define" {
-                i += 1;
-                let mut macrom: Macro = Macro { name: String::new(), tokens: Vec::new() };
-
-                let name: String = {
-                    if tokens[i].token_type == TokenType::Ident {
-                        tokens[i].value.clone()
-                    } else {
-                        println!("MACRO DECL: Expected Identifier");
-                        exit(1);
-                    }
-                };
-
-                macrom.name = name;
-
-                i += 1;
-
-                let mut terms: Vec<Token> = Vec::new();
-
-                while tokens[i].token_type != TokenType::NewLine {
-                    terms.push(tokens[i].clone());
-                    i += 1;
-                }
-
-                macrom.tokens = terms;
-
-                macros.push(macrom);
-            } else {
-                println!("This Macro doesnt exist `{}`",token.value);
-                exit(1);
-            }
-        }else{
-            next_tokens.push(token);
-        }
-
-        i += 1;
-
-    }
-    (macros, next_tokens)
-}
-
 pub fn is_macro(name: String, macros: &[Macro]) -> Option<Macro>{
     let mut macroms: Option<Macro> = None;
     for macrom in macros.iter(){
@@ -92,139 +43,6 @@ fn unwrap_macro(uno_macro: Macro, macros: &Vec<Macro>)->Vec<Token>{
     unwrap_token
 }
 
-fn ifdefs_macros(tokens: Vec<Token>, macros: Vec<Macro>)-> Vec<Token>{
-    let mut next_tokens: Vec<Token> = Vec::new();
-    let mut i: usize = 0;
-    let len: usize = tokens.len();
-    while i<len{
-        let token = tokens[i].clone();
-
-        match token.token_type{
-
-            TokenType::IfdefMacro => {
-                let mut base_tokens: Vec<Token> = Vec::new();
-                let mut else_tokens: Vec<Token> = Vec::new();
-
-                let mut base = true;
-
-                i+= 1;
-
-                let name = tokens[i].clone();
-
-                    i+=1;
-
-                    while tokens[i].token_type != TokenType::EndifMacro {
-
-                        let cur_token = tokens[i].clone();
-                        
-                        if cur_token.token_type != TokenType::ElseMacro{
-
-
-                            if base{
-                                base_tokens.push(cur_token);
-                            }else{
-                                else_tokens.push(cur_token);
-                            }
-
-                        }else{
-                            if base{
-                                base = false;
-                            }else{
-                                println!("#else was already defined");
-                                exit(1);
-                            }
-                        }
-                        i+=1;
-                    }
-                
-                if is_macro(name.value, &macros).is_some(){
-                    next_tokens.append(&mut base_tokens);
-                }else{
-                    next_tokens.append(&mut else_tokens);
-                }
-
-                i+=1;
-
-                // dbg!(next_tokens);
-
-                // println!("Not implemented yet");
-                // exit(1);
-            }
-            TokenType::IfNdefMacro => {
-                let mut base_tokens: Vec<Token> = Vec::new();
-                let mut else_tokens: Vec<Token> = Vec::new();
-
-                let mut base = true;
-
-                i+= 1;
-
-                let name = tokens[i].clone();
-
-                    i+=1;
-
-                    while tokens[i].token_type != TokenType::EndifMacro {
-
-                        let cur_token = tokens[i].clone();
-                        
-                        if cur_token.token_type != TokenType::ElseMacro{
-
-
-                            if base{
-                                base_tokens.push(cur_token);
-                            }else{
-                                else_tokens.push(cur_token);
-                            }
-
-                        }else{
-                            if base{
-                                base = false;
-                            }else{
-                                println!("#else was already defined");
-                                exit(1);
-                            }
-                        }
-                        i+=1;
-                    }
-                
-                if is_macro(name.value, &macros).is_none(){
-                    next_tokens.append(&mut base_tokens);
-                }else{
-                    next_tokens.append(&mut else_tokens);
-                }
-
-                i+=1;
-
-                // dbg!(&next_tokens);
-
-                // println!("Not implemented yet");
-                // exit(1);
-            }
-            TokenType::ElseMacro => {
-                println!("You need to specify condition");
-                exit(1);
-            }
-            TokenType::EndifMacro => {
-                println!("You need to specify condition");
-                exit(1);
-            }
-
-            TokenType::MacroDecl =>{
-                println!("Unreachable. Something is wrong with detecting macros");
-                exit(1);
-            }
-
-            _ => {
-                next_tokens.push(token);
-                i+=1;
-            }
-        }
-
-
-    }
-
-    next_tokens
-}
-
 fn unwrap_macros(tokens: Vec<Token>, macros: Vec<Macro>)-> Vec<Token>{
     let mut next_tokens: Vec<Token> = Vec::new();
     let mut i: usize = 0;
@@ -239,9 +57,7 @@ fn unwrap_macros(tokens: Vec<Token>, macros: Vec<Macro>)-> Vec<Token>{
 
         let name = token.value.clone();
         let macrom = is_macro(name.clone(), &macros);
-        // if macrom.is_some(){
         if let Some(macrom) = macrom {
-            // let macrom = macrom.unwrap();
             let mut macro_tokens = unwrap_macro(macrom, &macros);
             next_tokens.append(&mut macro_tokens);
         }else{
@@ -258,23 +74,263 @@ fn unwrap_macros(tokens: Vec<Token>, macros: Vec<Macro>)-> Vec<Token>{
     next_tokens
 }
 
+fn is_macro_token(token_type: TokenType) -> bool{
+
+    token_type == TokenType::MacroDecl ||
+    token_type == TokenType::IfdefMacro ||
+    token_type == TokenType::IfNdefMacro ||
+    token_type == TokenType::ElseMacro ||
+    token_type == TokenType::EndifMacro 
+
+}
+
+fn preprocess_macro_decl(i: &mut usize, tokens: &[Token], macros: &mut Vec<Macro>){
+    
+    let mut macrom: Macro = Macro{name: String::new(), tokens: Vec::new()};
+    
+    *i += 1; // move to indent
+    
+    let macro_name: Token = tokens[*i].clone();
+
+    if macro_name.token_type != TokenType::Ident {
+        println!("MacroDecl: Expected identifier");
+        exit(1);
+    }
+
+    for macron in macros.iter(){
+        if macro_name.value == macron.name {
+            println!("Macro already defined: #define {}", macro_name.value);
+            exit(1);
+        }
+    }
+
+    *i += 1; // move to terms
+
+    macrom.name = macro_name.value;
+
+    let mut terms: Vec<Token> = Vec::new();
+
+    while tokens[*i].token_type != TokenType::NewLine {
+
+        let token = tokens[*i].clone();
+
+        if is_macro_token(token.token_type.clone()){
+            println!("Cannot Put Macro inside #define");
+            exit(1);
+        }else{
+            terms.push(token);
+        }
+
+        *i += 1;
+    }
+
+    macrom.tokens = terms;
+
+    macros.push(macrom);
+}
+
+fn preprocess_ifdef_macro(i: &mut usize, tokens: &[Token], new_tokens: &mut Vec<Token>, macros: &mut Vec<Macro>){
+
+    *i += 1;
+
+    let macro_name: Token = tokens[*i].clone();
+
+    if macro_name.token_type != TokenType::Ident {
+        println!("Ifdef Macro: Expected identifier");
+        exit(1);
+    }
+
+    *i += 1; // skip to terms
+
+    let is_defined = {
+        let mut answ: bool = false;
+        for macrom in macros.iter(){
+            if macro_name.value == macrom.name{
+                answ = true;
+                break;      
+            }
+        }
+
+        answ
+    };
+
+
+
+    if is_defined{
+
+        while tokens[*i].token_type != TokenType::ElseMacro && tokens[*i].token_type != TokenType::EndifMacro {
+            let token: Token = tokens[*i].clone();
+
+            if is_macro_token(token.token_type.clone()){
+                preprocess_macro(i, tokens, new_tokens, macros);
+            }else{
+                new_tokens.push(token);
+                *i += 1;
+            }
+        }
+
+        if tokens[*i].token_type == TokenType::ElseMacro{
+            while tokens[*i].token_type != TokenType::EndifMacro {
+                *i+=1;
+            }
+        }
+
+        *i+=1; // skip endif token
+    }else{
+
+        while tokens[*i].token_type != TokenType::ElseMacro && tokens[*i].token_type != TokenType::EndifMacro {
+            *i+=1;
+        }
+        
+        if tokens[*i].token_type == TokenType::ElseMacro{
+            *i+=1;
+            while tokens[*i].token_type != TokenType::EndifMacro {
+                let token: Token = tokens[*i].clone();
+        
+                if is_macro_token(token.token_type.clone()){
+                    preprocess_macro(i, tokens, new_tokens, macros);
+                }else{
+                    new_tokens.push(token);
+                    *i += 1;
+                }
+            }
+        }
+        *i+=1; // skip endif token
+    }
+
+}
+fn preprocess_ifndef_macro(i: &mut usize, tokens: &[Token], new_tokens: &mut Vec<Token>, macros: &mut Vec<Macro>){
+
+    *i += 1;
+
+    let macro_name: Token = tokens[*i].clone();
+
+    if macro_name.token_type != TokenType::Ident {
+        println!("Ifdef Macro: Expected identifier");
+        exit(1);
+    }
+
+    *i += 1; // skip to terms
+
+    let is_defined = {
+        let mut answ: bool = false;
+        for macrom in macros.iter(){
+            if macro_name.value == macrom.name{
+                answ = true;
+                break;      
+            }
+        }
+
+        answ
+    };
+
+
+
+    if !is_defined{
+
+        while tokens[*i].token_type != TokenType::ElseMacro && tokens[*i].token_type != TokenType::EndifMacro {
+            let token: Token = tokens[*i].clone();
+
+            if is_macro_token(token.token_type.clone()){
+                preprocess_macro(i, tokens, new_tokens, macros);
+            }else{
+                new_tokens.push(token);
+                *i += 1;
+            }
+        }
+
+        if tokens[*i].token_type == TokenType::ElseMacro{
+            while tokens[*i].token_type != TokenType::EndifMacro {
+                *i+=1;
+            }
+        }
+
+        *i+=1; // skip endif token
+    }else{
+
+        while tokens[*i].token_type != TokenType::ElseMacro && tokens[*i].token_type != TokenType::EndifMacro {
+            *i+=1;
+        }
+        
+        if tokens[*i].token_type == TokenType::ElseMacro{
+            *i+=1;
+            while tokens[*i].token_type != TokenType::EndifMacro {
+                let token: Token = tokens[*i].clone();
+        
+                if is_macro_token(token.token_type.clone()){
+                    preprocess_macro(i, tokens, new_tokens, macros);
+                }else{
+                    new_tokens.push(token);
+                    *i += 1;
+                }
+            }
+        }
+        *i+=1; // skip endif token
+        
+
+    }
+
+}
+
+fn preprocess_macro(i: &mut usize, tokens: &[Token], new_tokens: &mut Vec<Token>, macros: &mut Vec<Macro>){
+    // let macrom: Macro = Macro{name: String::new(), tokens: Vec::new()};
+    let token: Token = tokens[*i].clone();
+
+    match token.token_type{
+
+        TokenType::MacroDecl => {
+            preprocess_macro_decl(i, tokens, macros);
+        }
+        
+        TokenType::IfdefMacro => {
+            preprocess_ifdef_macro(i, tokens, new_tokens, macros);
+        }
+        
+        TokenType :: IfNdefMacro => {
+            preprocess_ifndef_macro(i, tokens, new_tokens, macros);
+        }
+
+        TokenType:: EndifMacro => {
+            println!("EndifMacro: You need to declare contition");
+            exit(1);
+        }
+
+        TokenType :: ElseMacro => {
+            println!("ElseMacro: You need to declare contition");
+            exit(1);
+        }
+
+        _ => {
+            println!("Unreachable, there are only macro tokens got {}", token.value);
+            exit(1);
+        }
+    }
+
+}
+
+fn preprocess_macros(tokens: Vec<Token>) -> (Vec<Token>,Vec<Macro>){
+    let mut new_tokens: Vec<Token> = Vec::new();
+    let mut macros: Vec<Macro> = Vec::new();
+    let mut i: usize = 0;
+    let len: usize = tokens.len();
+
+    while i<len{
+
+        let token: Token = tokens[i].clone();
+
+        if is_macro_token(token.token_type.clone()){
+            preprocess_macro(&mut i, &tokens, &mut new_tokens, &mut macros)
+        }else{
+            new_tokens.push(token)
+        }
+
+        i+=1;
+    }
+
+    (new_tokens, macros)
+}
+
 pub fn preprocess_tokens(tokens: Vec<Token>) -> Vec<Token> {
-    // let mut new_tokens: Vec<Token> = Vec::new();
-
-    //TODO: currently you cannot have conditional macros fix it
-    /*
-        #define test
-
-        #ifdef test
-            #define color `"red"`
-        #else
-            #define color `"blue"`
-        #endif
-
-        this wont work `color` whill always be "red"
-
-     */
-
     //TODO: Add ability to pass arguments into macros
     /*
     
@@ -286,21 +342,7 @@ pub fn preprocess_tokens(tokens: Vec<Token>) -> Vec<Token> {
 
      */
 
-    let (macros, new_tokens) = detect_macros(&tokens);
-    
-    let new_tokens = ifdefs_macros(new_tokens, macros.clone());
+    let (new_tokens,macros) = preprocess_macros(tokens);
     
     unwrap_macros(new_tokens, macros)
-
-    // println!("--------------------");
-
-    // dbg!(&new_tokens);
-
-    // exit(1);
-
-    // for token in tokens.iter() {
-    //     new_tokens.push(token.clone());
-    // }
-
-    // new_tokens
 }

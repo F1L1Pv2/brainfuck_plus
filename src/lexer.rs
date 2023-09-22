@@ -208,8 +208,8 @@ pub fn lex_file(contents: String) -> Vec<Token> {
                                     }
                                 }
 
-                                if word.starts_with("\""){
-                                    if word.ends_with("\""){
+                                if word.starts_with('\"'){
+                                    if word.ends_with('\"'){
                                         let mut new_str: String = String::new();
                                         let len:usize = word.len()-1;
                                         for n in 1..len{
@@ -224,7 +224,7 @@ pub fn lex_file(contents: String) -> Vec<Token> {
                                 }else{
                                     let mut is_number = true;
                                     for ch in word.chars(){
-                                        if !ch.is_digit(10){
+                                        if !ch.is_ascii_digit(){
                                             is_number=false;
                                             break;
                                         }
