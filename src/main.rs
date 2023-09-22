@@ -37,7 +37,24 @@ fn main() {
         exit(1);
     }
 
-    let contents = fs::read_to_string(filename).expect("Something went wrong reading the file");
+    let contents = fs::read_to_string(filename.clone()).expect("Something went wrong reading the file");
+
+    let path: String = {
+        let mut temp = String::new();
+        let arr = filename.split('/').collect::<Vec<&str>>();
+        let len = arr.len();
+
+        for folder in arr.iter().take(len-1){
+            temp += folder;
+            temp += "/";
+        }
+
+        temp
+    };
+
+    // dbg!(path);
+
+    // exit(1);
 
     let mut file_content: String = String::new();
 
@@ -49,7 +66,7 @@ fn main() {
 
     let tokens = lex_file(contents);
     // dbg!(&tokens);
-    let tokens = preprocess_tokens(tokens);
+    let tokens = preprocess_tokens(tokens, filename.clone(),path);
     let operations = parse_file(tokens);
 
     generate_code(operations, &mut file_content);

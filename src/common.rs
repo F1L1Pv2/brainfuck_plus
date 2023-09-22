@@ -8,6 +8,7 @@ pub enum TokenType{
     IfNdefMacro, // #ifndef
     ElseMacro, // #else macro
     EndifMacro, // #endif
+    IncludeMacro, // #include
     PointerLeft, // <
     PointerRight, // >
     PointerReset, // &
@@ -26,6 +27,8 @@ pub enum TokenType{
     Pop, // _
     IntLit, // 0123
     StringLit, // "baller"
+    OpenParen, // (
+    CloseParen, // )
 }
 
 #[derive(Debug, Clone)]

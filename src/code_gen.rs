@@ -281,6 +281,18 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String) {
                 println!("EndifMacro: Unreachable Something with preprocessing is wrong");
                 exit(1);
             }
+            TokenType::IncludeMacro => {
+                println!("IncludeMacro: Unreachable Something with preprocessing is wrong");
+                exit(1);
+            }
+            TokenType::OpenParen => {
+                println!("OpenParen: Not implemented yet!");
+                exit(1);
+            }
+            TokenType::CloseParen => {
+                println!("CloseParen: Not implemented yet!");
+                exit(1);
+            }
             TokenType::Ident => {
                 println!("Idents are not implemented yet");
                 exit(1);

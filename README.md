@@ -42,7 +42,7 @@ Cells are `short unsigned ints` `(u8)` (for now)
 - [x] Add Push Pop Stack Operation
 - [ ] Add bitwise operations
 - [ ] Add ability to create multiple mem lines and ability to specify their cell size and max len (in cells)
-- [ ] Add Include and Libs to compiler
+- [ ] Add Include Dirs and Libs to compiler
 - [ ] Add Ability to call extern functions
-- [ ] Add #include
+- [x] Add #include
 - [x] Add #ifdef #ifndef #else #endif 

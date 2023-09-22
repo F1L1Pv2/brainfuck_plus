@@ -139,7 +139,7 @@ pub fn lex_file(contents: String) -> Vec<Token> {
                                 // println!("Idents and Macros not implemented yet");
                                 let mut word: String = String::new();
                                 // let nexty_ch = contents.chars().nth(i);
-                                while contents.chars().nth(i).unwrap().is_alphanumeric() || contents.chars().nth(i).unwrap() == '#'{
+                                while !contents.chars().nth(i).unwrap().is_whitespace(){
                                     // print!("{}", contents.chars().nth(i).unwrap());
                                     // println!("{}",contents.chars().nth(i).unwrap());
                                     word += contents.chars().nth(i).unwrap().to_string().as_str();
@@ -180,6 +180,11 @@ pub fn lex_file(contents: String) -> Vec<Token> {
                                     
                                     "#endif" => {
                                         tokens.push(Token { token_type: TokenType::EndifMacro, value: word });
+                                        continue;
+                                    }
+
+                                    "#include" => {
+                                        tokens.push(Token { token_type: TokenType::IncludeMacro, value: word });
                                         continue;
                                     }
                                     
