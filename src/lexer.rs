@@ -118,6 +118,13 @@ pub fn lex_file(contents: String) -> Vec<Token> {
                     });
                 }
 
+                '@' => {
+                    tokens.push(Token {
+                        token_type: TokenType::CurrentTape,
+                        value: ch.to_string(),
+                    });
+                }
+
                 _ => match checker.as_str() {
                     "//" => {
                         // println!("[Single Line Comment: ");
@@ -134,128 +141,215 @@ pub fn lex_file(contents: String) -> Vec<Token> {
                     _ => {
                         // println!("unexpected token: {}", ch);
                         if !ch.is_whitespace() {
-                            if ch != '`'{
+                            if ch != '`' {
                                 // println!("Unexpected token: {}", ch);
                                 // println!("Idents and Macros not implemented yet");
                                 let mut word: String = String::new();
                                 // let nexty_ch = contents.chars().nth(i);
-                                while !contents.chars().nth(i).unwrap().is_whitespace(){
+                                while !contents.chars().nth(i).unwrap().is_whitespace() {
                                     // print!("{}", contents.chars().nth(i).unwrap());
                                     // println!("{}",contents.chars().nth(i).unwrap());
                                     word += contents.chars().nth(i).unwrap().to_string().as_str();
-                                    i+=1;
-                                    if contents.chars().nth(i).is_none(){
+                                    i += 1;
+                                    if contents.chars().nth(i).is_none() {
                                         break;
                                     }
                                 }
                                 // println!("");
 
-                                if word.is_empty(){
+                                if word.is_empty() {
                                     println!("Something fucked up in lexer");
-                                    println!("Len: {} i: {} char: {}",contents.len(), i, contents.chars().nth(i).unwrap());
+                                    println!(
+                                        "Len: {} i: {} char: {}",
+                                        contents.len(),
+                                        i,
+                                        contents.chars().nth(i).unwrap()
+                                    );
                                     exit(1);
                                 }
 
                                 // println!("Word: \"{}\"", word);
-                                match word.to_lowercase().as_str(){
+                                match word.to_lowercase().as_str() {
                                     "#define" => {
-                                        tokens.push(Token { token_type: TokenType::MacroDecl, value: word });
+                                        tokens.push(Token {
+                                            token_type: TokenType::MacroDecl,
+                                            value: word,
+                                        });
                                         continue;
                                     }
-                                    
+
                                     "#ifdef" => {
-                                        tokens.push(Token { token_type: TokenType::IfdefMacro, value: word });
+                                        tokens.push(Token {
+                                            token_type: TokenType::IfdefMacro,
+                                            value: word,
+                                        });
                                         continue;
                                     }
-                                    
+
                                     "#ifndef" => {
-                                        tokens.push(Token { token_type: TokenType::IfNdefMacro, value: word });
+                                        tokens.push(Token {
+                                            token_type: TokenType::IfNdefMacro,
+                                            value: word,
+                                        });
                                         continue;
                                     }
-                                    
+
                                     "#else" => {
-                                        tokens.push(Token { token_type: TokenType::ElseMacro, value: word });
+                                        tokens.push(Token {
+                                            token_type: TokenType::ElseMacro,
+                                            value: word,
+                                        });
                                         continue;
                                     }
-                                    
+
                                     "#endif" => {
-                                        tokens.push(Token { token_type: TokenType::EndifMacro, value: word });
+                                        tokens.push(Token {
+                                            token_type: TokenType::EndifMacro,
+                                            value: word,
+                                        });
                                         continue;
                                     }
 
                                     "#include" => {
-                                        tokens.push(Token { token_type: TokenType::IncludeMacro, value: word });
+                                        tokens.push(Token {
+                                            token_type: TokenType::IncludeMacro,
+                                            value: word,
+                                        });
                                         continue;
                                     }
-                                    
-                                    _ =>{
-                                        tokens.push(Token { token_type: TokenType::Ident, value: word });
+
+                                    "#tape" => {
+                                        tokens.push(Token {
+                                            token_type: TokenType::TapeDecl,
+                                            value: word,
+                                        });
+                                        continue;
+                                    }
+
+                                    "byte" => {
+                                        tokens.push(Token {
+                                            token_type: TokenType::CellSize,
+                                            value: word,
+                                        });
+                                        continue;
+                                    }
+
+                                    "word" => {
+                                        tokens.push(Token {
+                                            token_type: TokenType::CellSize,
+                                            value: word,
+                                        });
+                                        continue;
+                                    }
+
+                                    "dword" => {
+                                        tokens.push(Token {
+                                            token_type: TokenType::CellSize,
+                                            value: word,
+                                        });
+                                        continue;
+                                    }
+
+                                    "qword" => {
+                                        tokens.push(Token {
+                                            token_type: TokenType::CellSize,
+                                            value: word,
+                                        });
+                                        continue;
+                                    }
+
+                                    _ => {
+                                        tokens.push(Token {
+                                            token_type: TokenType::Ident,
+                                            value: word,
+                                        });
                                         continue;
                                     }
                                 }
-
-                            }else{
-
+                            } else {
                                 let mut word: String = String::new();
 
-                                i+=1;
+                                i += 1;
                                 // let nexty_ch = contents.chars().nth(i);
-                                while contents.chars().nth(i).unwrap() != '`'{
-
-
-
+                                while contents.chars().nth(i).unwrap() != '`' {
                                     // print!("{}", contents.chars().nth(i).unwrap());
                                     // println!("{}",contents.chars().nth(i).unwrap());
                                     word += contents.chars().nth(i).unwrap().to_string().as_str();
-                                    i+=1;
-                                    if contents.chars().nth(i).is_none(){
+                                    i += 1;
+                                    if contents.chars().nth(i).is_none() {
                                         break;
                                     }
                                 }
 
-                                if word.starts_with('\"'){
-                                    if word.ends_with('\"'){
+                                if word.starts_with('\"') {
+                                    if word.ends_with('\"') {
                                         let mut new_str: String = String::new();
-                                        let len:usize = word.len()-1;
-                                        for n in 1..len{
+                                        let len: usize = word.len() - 1;
+                                        for n in 1..len {
                                             let ch = word.chars().nth(n).unwrap().to_string();
                                             new_str += ch.as_str();
                                         }
-                                        tokens.push(Token { token_type: TokenType::StringLit, value: new_str.replace("\\n", "\n") });
-                                    }else{
+                                        tokens.push(Token {
+                                            token_type: TokenType::StringLit,
+                                            value: new_str.replace("\\n", "\n"),
+                                        });
+                                    } else {
                                         println!("Expected \" at the end of string lit");
                                         exit(1);
                                     }
-                                }else if word.starts_with('('){
-                                    if word.ends_with(')'){
+                                } else if word.starts_with('(') {
+                                    if word.ends_with(')') {
                                         let mut new_str: String = String::new();
-                                        let len:usize = word.len()-1;
-                                        for n in 1..len{
+                                        let len: usize = word.len() - 1;
+                                        for n in 1..len {
                                             let ch = word.chars().nth(n).unwrap().to_string();
                                             new_str += ch.as_str();
                                         }
-                                        tokens.push(Token { token_type: TokenType::IncludePath, value: new_str });
-                                    }else{
-                                        println!("Expected \" at the end of string lit");
+                                        tokens.push(Token {
+                                            token_type: TokenType::IncludePath,
+                                            value: new_str,
+                                        });
+                                    } else {
+                                        println!("Expected ) at the end of include path");
                                         exit(1);
                                     }
-                                }else{
+                                } else if word.starts_with('{') {
+
+                                    if word.ends_with('}') {
+                                        let mut new_str: String = String::new();
+                                        let len: usize = word.len() - 1;
+                                        for n in 1..len {
+                                            let ch = word.chars().nth(n).unwrap().to_string();
+                                            new_str += ch.as_str();
+                                        }
+                                        tokens.push(Token {
+                                            token_type: TokenType::TapeName,
+                                            value: new_str,
+                                        });
+                                    } else {
+                                        println!("Expected }} at the end of tape name");
+                                        exit(1);
+                                    }
+
+                                } else {
                                     let mut is_number = true;
-                                    for ch in word.chars(){
-                                        if !ch.is_ascii_digit(){
-                                            is_number=false;
+                                    for ch in word.chars() {
+                                        if !ch.is_ascii_digit() {
+                                            is_number = false;
                                             break;
                                         }
                                     }
 
                                     if is_number {
-                                        tokens.push(Token { token_type: TokenType::IntLit, value: word });
-                                    }else{
+                                        tokens.push(Token {
+                                            token_type: TokenType::IntLit,
+                                            value: word,
+                                        });
+                                    } else {
                                         println!("Expected int literal");
                                         exit(1);
                                     }
                                 }
-
 
                                 // println!("{}",word);
 

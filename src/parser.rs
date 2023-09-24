@@ -1,3 +1,5 @@
+use std::process::exit;
+
 // use std::process::exit;
 use crate::common::*;
 
@@ -18,10 +20,10 @@ fn trim_tokens(i: &mut usize, tokens: &Vec<Token>, token_type: TokenType) -> Ope
         }
     }
 
-    Operation { token_type, count, values}
+    Operation { token_type, count, values, tape: None}
 }
 
-pub fn parse_file(tokens: Vec<Token>) -> Vec<Operation> {
+pub fn parse_file(tokens: Vec<Token>, tapes: &Vec<Tape>) -> Vec<Operation> {
     let mut operations: Vec<Operation> = Vec::new();
 
     let mut i: usize = 0;
@@ -55,8 +57,38 @@ pub fn parse_file(tokens: Vec<Token>) -> Vec<Operation> {
                 operations.push(trim_tokens(&mut i, &tokens, token.token_type))
             }
 
+            TokenType::CurrentTape => {
+                i += 1;
+                let tape_name = tokens[i].clone();
+                if tape_name.token_type != TokenType::TapeName{
+                    println!("CurrentTape: Expected tape name after operation got {}", tape_name.value);
+                    exit(1);
+                }
+
+                let tape = {
+                    let mut tape: Option<Tape> = None;
+                    for tapem in tapes.iter(){
+                        if tapem.name == tape_name.value{
+                            tape = Some(tapem.clone());
+                            break;
+                        }
+                    }
+
+                    tape
+                };
+
+                if tape.is_none(){
+                    println!("Tape {} not defined", tape_name.value);
+                    exit(1);
+                
+                }
+
+                operations.push(Operation { token_type: token.token_type, count: 1, values: vec![token.value], tape});
+                i += 1;
+            }
+
             _ => {
-                operations.push(Operation { token_type: token.token_type, count: 1, values: vec![token.value]});
+                operations.push(Operation { token_type: token.token_type, count: 1, values: vec![token.value], tape: None});
                 i += 1;
             }
         }

@@ -28,6 +28,25 @@ pub enum TokenType{
     IntLit, // 0123
     StringLit, // "baller"
     IncludePath, // (std/loops.bf)
+    TapeDecl, // #tape 
+    CellSize, // byte, word, dword, qword 
+    TapeName, // `{main}`
+    CurrentTape, // @`{TapeName}`
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum Size{
+    Byte,
+    Word,
+    Dword,
+    Qword,
+}
+
+#[derive(Debug, Clone)]
+pub struct Tape{
+    pub name: String,
+    pub size: Size,
+    pub cell_count: usize
 }
 
 #[derive(Debug, Clone)]
@@ -56,5 +75,6 @@ pub enum Jumps {
 pub struct Operation{
     pub token_type: TokenType,
     pub count: usize,
-    pub values: Vec<String>
+    pub values: Vec<String>,
+    pub tape: Option<Tape>
 }

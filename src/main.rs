@@ -170,6 +170,8 @@ fn main() {
 
     let mut file_content: String = String::new();
 
+    let mut tapes: Vec<Tape> = vec![Tape{name: "main".to_string(), size: Size::Byte, cell_count: MEM_SIZE}];
+
     //Boilerplate
     file_content.push_str("BITS 64\n");
     file_content.push_str("section .text\n");
@@ -178,10 +180,10 @@ fn main() {
 
     let tokens = lex_file(contents);
     // dbg!(&tokens);
-    let tokens = preprocess_tokens(tokens, filename.clone(), path, includes);
-    let operations = parse_file(tokens);
+    let tokens = preprocess_tokens(tokens, filename.clone(), path, includes, &mut tapes);
+    let operations = parse_file(tokens, &tapes);
 
-    generate_code(operations, &mut file_content);
+    generate_code(operations, &mut file_content, &tapes);
 
     // generate_code_backup(tokens, &mut file_content);
 
@@ -191,8 +193,37 @@ fn main() {
     file_content.push_str("    syscall\n");
 
     file_content.push_str("section .bss\n");
-    file_content.push_str("    pointer: resb 8\n");
-    file_content.push_str(format!("    mem: resb {} \n", MEM_SIZE).as_str());
+    // file_content.push_str("    pointer: resb 8\n");
+    // file_content.push_str(format!("    mem: resb {} \n", MEM_SIZE).as_str());
+
+    file_content.push_str("; -------- tapes -------- ; \n");
+    
+    for tape in tapes.iter(){
+
+        let size_str = match tape.size{
+            Size::Byte => {
+                "resb"
+            }
+            Size::Word => {
+                "resw"
+            }
+            Size::Dword => {
+                "resd"
+            }
+            Size::Qword => {
+                "resq"
+            }
+        };
+
+        file_content.push_str(format!("    {}_pointer: resq 1\n",tape.name).as_str());
+        file_content.push_str(format!("    {}: {} {}\n",tape.name,size_str,tape.cell_count).as_str());
+    }
+
+
+    // dbg!(file_content);
+    // print!("{}",file_content);
+
+    // exit(1);
 
     // create a new file
     let path = filename.replace(".bf", ".asm");
