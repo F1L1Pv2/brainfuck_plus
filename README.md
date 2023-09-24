@@ -27,6 +27,8 @@ Cells are `short unsigned ints` `(u8)` (for now)
 - `&` reset pointer (set it to 0)
 - `^` push current cell into stack
 - `_` pop from stack into current cell
+- ``` @`{main}` ``` set tape to specified one
+- ```#tape msg byte 14 ``` this creates a new tape (if you dont declare any by default you will be on `main` tape which has `byte` cell size and cell_count set to `MEM_SIZE` constant
 
 **One thing to remember depending on your machine data could be in little or in big endian**
 
@@ -36,7 +38,6 @@ Cells are `short unsigned ints` `(u8)` (for now)
 - [x] Add ability to perform syscalls
 - [x] Add macros
 - [x] Add str char and numbers literals into bf+
-- [ ] Add labels and ability to jmp
 - [ ] If possible rewrite bf+ in itself
 - [ ] Add Windows support (somehow)
 - [x] Add Push Pop Stack Operation
@@ -44,5 +45,6 @@ Cells are `short unsigned ints` `(u8)` (for now)
 - [x] Add ability to create multiple mem lines and ability to specify their cell size and max len (in cells)
 - [x] Add Include Dirs and Libs to compiler
 - [ ] Add Ability to call extern functions
+- [ ] Add Ability to pass arguments into macros
 - [x] Add #include
 - [x] Add #ifdef #ifndef #else #endif 
