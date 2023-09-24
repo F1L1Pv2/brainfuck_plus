@@ -27,8 +27,6 @@ pub enum TokenType{
     Pop, // _
     IntLit, // 0123
     StringLit, // "baller"
-    OpenParen, // (
-    CloseParen, // )
     IncludePath, // (std/loops.bf)
 }
 
