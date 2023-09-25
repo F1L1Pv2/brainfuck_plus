@@ -418,33 +418,73 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
                 // exit(1);
             }
             TokenType::NewLine => {}
-            
+            TokenType::MacroDecl => {
+                println!("MacroDecl: Unreachable Something with preprocessing is wrong");
+                exit(1);
+            }
+            TokenType::TapeDecl => {
+                println!("TapeDecl: Unreachable Something with preprocessing is wrong");
+                exit(1);
+            }
+
             TokenType::TapeName => {
                 // println!("TapeName: Unreachable Something with preprocessing is wrong");
                 // exit(1);
-                
+
                 let mut exist = false;
                 for tape in tapes{
                     if tape.name == operation.values[0]{
                         exist = true;
                     }
                 }
-                
+
                 if !exist{
                     println!("Tape {} isnt defined", operation.values[0]);
                     exit(1);
                 }
-                
+
                 file_content.push_str(format!("    mov rax, {}\n", tape.name).as_str());
                 file_content.push_str(format!("    add rax, QWORD[{}_pointer]\n",tape.name).as_str());
                 file_content.push_str(format!("    mov rbx, {}\n", operation.values[0]).as_str());
                 file_content.push_str("    mov QWORD[rax], rbx\n");
             }
 
-            _ => {
-                println!("{:?}: Unreachable Something with preprocessing/parsing is wrong", operation.token_type);
+            TokenType::CellSize => {
+                println!("CellSize: Unreachable Something with preprocessing is wrong");
                 exit(1);
             }
+            TokenType::IfdefMacro => {
+                println!("IfdefMacro: Unreachable Something with preprocessing is wrong");
+                exit(1);
+            }
+            TokenType::IfNdefMacro => {
+                println!("IfNdefMacro: Unreachable Something with preprocessing is wrong");
+                exit(1);
+            }
+            TokenType::ElseMacro => {
+                println!("ElseMacro: Unreachable Something with preprocessing is wrong");
+                exit(1);
+            }
+            TokenType::EndifMacro => {
+                println!("EndifMacro: Unreachable Something with preprocessing is wrong");
+                exit(1);
+            }
+            TokenType::IncludeMacro => {
+                println!("IncludeMacro: Unreachable Something with preprocessing is wrong");
+                exit(1);
+            }
+            TokenType::IncludePath => {
+                println!("IncludePath: Unreachable Something with preprocessing is wrong");
+                exit(1);
+            }
+            TokenType::Ident => {
+                println!("Idents are not implemented yet");
+                exit(1);
+            }
+
+            // _ => {
+            //     println!("Unreachable: Token {}", token.value);
+            // }
         }
     }
 }
