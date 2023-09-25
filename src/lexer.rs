@@ -124,6 +124,26 @@ pub fn lex_file(contents: String) -> Vec<Token> {
                         value: ch.to_string(),
                     });
                 }
+                '(' => {
+                    tokens.push(Token {
+                        token_type: TokenType::OpenParen,
+                        value: ch.to_string(),
+                    });
+                }
+
+                ')' => {
+                    tokens.push(Token {
+                        token_type: TokenType::CloseParen,
+                        value: ch.to_string(),
+                    });
+                }
+
+                '|' => {
+                    tokens.push(Token {
+                        token_type: TokenType::SplitArg,
+                        value: ch.to_string(),
+                    });
+                }
 
                 _ => match checker.as_str() {
                     "//" => {
@@ -146,7 +166,10 @@ pub fn lex_file(contents: String) -> Vec<Token> {
                                 // println!("Idents and Macros not implemented yet");
                                 let mut word: String = String::new();
                                 // let nexty_ch = contents.chars().nth(i);
-                                while !contents.chars().nth(i).unwrap().is_whitespace() {
+                                while !contents.chars().nth(i).unwrap().is_whitespace()
+                                    && contents.chars().nth(i).unwrap() != '('
+                                    && contents.chars().nth(i).unwrap() != ')'
+                                {
                                     // print!("{}", contents.chars().nth(i).unwrap());
                                     // println!("{}",contents.chars().nth(i).unwrap());
                                     word += contents.chars().nth(i).unwrap().to_string().as_str();
@@ -314,7 +337,6 @@ pub fn lex_file(contents: String) -> Vec<Token> {
                                         exit(1);
                                     }
                                 } else if word.starts_with('{') {
-
                                     if word.ends_with('}') {
                                         let mut new_str: String = String::new();
                                         let len: usize = word.len() - 1;
@@ -330,7 +352,6 @@ pub fn lex_file(contents: String) -> Vec<Token> {
                                         println!("Expected }} at the end of tape name");
                                         exit(1);
                                     }
-
                                 } else {
                                     let mut is_number = true;
                                     for ch in word.chars() {
