@@ -21,12 +21,13 @@ Cells are `short unsigned ints` `(u8)` (for now)
 #### New Instructions
 
 - `'` clear current cell (set 0)
-- `?` perform a syscall (look at examples to get better idea)
+- `?` perform a syscall (look at examples to get better idea) (output parameter into stack)
 - `$` put current cell's memmory adress into that cell
 - `%` put base memmory address into current cell
 - `&` reset pointer (set it to 0)
 - `^` push current cell into stack
 - `_` pop from stack into current cell
+- `*` delete element from top of a stack
 - ``` @`{main}` ``` set tape to specified one
 - ```#tape msg byte 14 ``` this creates a new tape (if you dont declare any by default you will be on `main` tape which has `byte` cell size and cell_count set to `MEM_SIZE` constant
 

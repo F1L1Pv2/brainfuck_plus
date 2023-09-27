@@ -32,6 +32,7 @@ pub enum TokenType{
     CellSize, // byte, word, dword, qword 
     TapeName, // `{main}`
     CurrentTape, // @`{TapeName}`
+    StackDel, // *
 }
 
 #[derive(Debug, Clone, PartialEq)]

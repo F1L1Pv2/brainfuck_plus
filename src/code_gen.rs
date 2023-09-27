@@ -161,16 +161,25 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
             // '?' => {
             TokenType::Syscall => {
                 // perform syscall
-                file_content.push_str(format!("    mov rbp, {}\n", tape.name).as_str());
-                file_content.push_str(format!("    add rbp, QWORD[{}_pointer]\n", tape.name).as_str());
-                file_content.push_str("    mov rax, QWORD[rbp]\n");
-                file_content.push_str("    add rbp, 8\n");
-                file_content.push_str("    mov rdi, QWORD[rbp]\n");
-                file_content.push_str("    add rbp, 8\n");
-                file_content.push_str("    mov rsi, QWORD[rbp]\n");
-                file_content.push_str("    add rbp, 8\n");
-                file_content.push_str("    mov rdx, QWORD[rbp]\n");
+                file_content.push_str(format!("    mov rbx, {}\n", tape.name).as_str());
+                file_content.push_str(format!("    add rbx, QWORD[{}_pointer]\n", tape.name).as_str());
+                file_content.push_str("    mov rax, QWORD[rbx]\n");
+                file_content.push_str("    add rbx, 8\n");
+                file_content.push_str("    mov rdi, QWORD[rbx]\n");
+                file_content.push_str("    add rbx, 8\n");
+                file_content.push_str("    mov rsi, QWORD[rbx]\n");
+                file_content.push_str("    add rbx, 8\n");
+                file_content.push_str("    mov rdx, QWORD[rbx]\n");
+                file_content.push_str("    add rbx, 8\n");
+                file_content.push_str("    mov r10, QWORD[rbx]\n");
+                file_content.push_str("    add rbx, 8\n");
+                file_content.push_str("    mov r8, QWORD[rbx]\n");
+                file_content.push_str("    add rbx, 8\n");
+                file_content.push_str("    mov r9, QWORD[rbx]\n");
                 file_content.push_str("    syscall\n");
+                file_content.push_str(format!("    mov rbx, {}\n", tape.name).as_str());
+                file_content.push_str(format!("    add rbx, QWORD[{}_pointer]\n", tape.name).as_str());
+                file_content.push_str("    push rax\n");
             }
 
             // '\'' => {
@@ -209,6 +218,10 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
                     }
 
 
+                }
+
+                TokenType::StackDel => {
+                    file_content.push_str("    pop rax\n");
                 }
 
                 TokenType::Push => {

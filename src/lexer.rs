@@ -118,6 +118,13 @@ pub fn lex_file(contents: String) -> Vec<Token> {
                     });
                 }
 
+                '*' => {
+                    tokens.push(Token {
+                        token_type: TokenType::StackDel,
+                        value: ch.to_string(),
+                    });
+                }
+
                 '@' => {
                     tokens.push(Token {
                         token_type: TokenType::CurrentTape,
@@ -291,13 +298,14 @@ pub fn lex_file(contents: String) -> Vec<Token> {
                                         }
                                         tokens.push(Token {
                                             token_type: TokenType::StringLit,
-                                            value: new_str.replace("\\n", "\n"),
+                                            value: new_str.replace("\\n", "\n").replace("\\0", "\0"),
                                         });
                                     } else {
                                         println!("Expected \" at the end of string lit");
                                         exit(1);
                                     }
-                                } else if word.starts_with('(') {
+                                } 
+                                else if word.starts_with('(') {
                                     if word.ends_with(')') {
                                         let mut new_str: String = String::new();
                                         let len: usize = word.len() - 1;
@@ -313,7 +321,8 @@ pub fn lex_file(contents: String) -> Vec<Token> {
                                         println!("Expected ) at the end of include path");
                                         exit(1);
                                     }
-                                } else if word.starts_with('{') {
+                                }  
+                                else if word.starts_with('{') {
 
                                     if word.ends_with('}') {
                                         let mut new_str: String = String::new();
@@ -326,7 +335,9 @@ pub fn lex_file(contents: String) -> Vec<Token> {
                                             token_type: TokenType::TapeName,
                                             value: new_str,
                                         });
-                                    } else {
+                                    } 
+                                    
+                                    else {
                                         println!("Expected }} at the end of tape name");
                                         exit(1);
                                     }
