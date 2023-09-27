@@ -6,7 +6,7 @@ use std::path::Path;
 use std::process::exit;
 
 pub mod common;
-use common::{MEM_SIZE, Size, Tape};
+use common::{Size, Tape, MEM_SIZE};
 
 pub mod lexer;
 use lexer::lex_file;
@@ -21,7 +21,6 @@ use preprocess::preprocess_tokens;
 pub mod parser;
 
 fn usage(filename: String) {
-
     let mut arr = filename.split('/').collect::<Vec<&str>>();
     arr.reverse();
 
@@ -48,7 +47,7 @@ fn main() {
         let len = arr.len() - 1;
         let mut out = String::new();
 
-        for folder in arr.iter().take(len){
+        for folder in arr.iter().take(len) {
             out += folder;
             out += "/";
         }
@@ -67,50 +66,48 @@ fn main() {
     //     exit(1);
     // }
 
-    while arg_i < argc{
-
+    while arg_i < argc {
         let arg = args[arg_i].clone();
 
-        match arg.as_str(){
-
+        match arg.as_str() {
             "-I" => {
                 arg_i += 1;
-                if arg_i < argc{
+                if arg_i < argc {
                     includes.push(args[arg_i].clone())
                 }
             }
 
             "-i" => {
                 arg_i += 1;
-                if arg_i < argc{
+                if arg_i < argc {
                     includes.push(args[arg_i].clone())
                 }
             }
 
             "-l" => {
                 arg_i += 1;
-                if arg_i < argc{
+                if arg_i < argc {
                     libs.push(args[arg_i].clone())
                 }
             }
 
             "-L" => {
                 arg_i += 1;
-                if arg_i < argc{
+                if arg_i < argc {
                     libs.push(args[arg_i].clone())
                 }
             }
 
             "-o" => {
                 arg_i += 1;
-                if arg_i < argc{
+                if arg_i < argc {
                     out_file_path = args[arg_i].clone();
                 }
             }
 
             "-O" => {
                 arg_i += 1;
-                if arg_i < argc{
+                if arg_i < argc {
                     out_file_path = args[arg_i].clone();
                 }
             }
@@ -120,18 +117,14 @@ fn main() {
             }
         }
 
-
-        arg_i+=1;
+        arg_i += 1;
     }
 
-
-    if !libs.is_empty(){
+    if !libs.is_empty() {
         usage(args[0].clone());
         println!("Libs are not currently implemented");
         exit(1);
     }
-
-
 
     if filename == String::new() {
         usage(args[0].clone());
@@ -149,9 +142,8 @@ fn main() {
         exit(1);
     }
 
-    let contents = fs
-        ::read_to_string(filename.clone())
-        .expect("Something went wrong reading the file");
+    let contents =
+        fs::read_to_string(filename.clone()).expect("Something went wrong reading the file");
 
     let path: String = {
         let mut temp = String::new();
@@ -170,7 +162,11 @@ fn main() {
 
     let mut file_content: String = String::new();
 
-    let mut tapes: Vec<Tape> = vec![Tape{name: "main".to_string(), size: Size::Byte, cell_count: MEM_SIZE}];
+    let mut tapes: Vec<Tape> = vec![Tape {
+        name: "main".to_string(),
+        size: Size::Byte,
+        cell_count: MEM_SIZE,
+    }];
 
     //Boilerplate
     file_content.push_str("BITS 64\n");
@@ -197,28 +193,19 @@ fn main() {
     // file_content.push_str(format!("    mem: resb {} \n", MEM_SIZE).as_str());
 
     file_content.push_str("; -------- tapes -------- ; \n");
-    
-    for tape in &tapes{
 
-        let size_str = match tape.size{
-            Size::Byte => {
-                "resb"
-            }
-            Size::Word => {
-                "resw"
-            }
-            Size::Dword => {
-                "resd"
-            }
-            Size::Qword => {
-                "resq"
-            }
+    for tape in &tapes {
+        let size_str = match tape.size {
+            Size::Byte => "resb",
+            Size::Word => "resw",
+            Size::Dword => "resd",
+            Size::Qword => "resq",
         };
 
-        file_content.push_str(format!("    {}_pointer: resq 1\n",tape.name).as_str());
-        file_content.push_str(format!("    {}: {} {}\n",tape.name,size_str,tape.cell_count).as_str());
+        file_content.push_str(format!("    {}_pointer: resq 1\n", tape.name).as_str());
+        file_content
+            .push_str(format!("    {}: {} {}\n", tape.name, size_str, tape.cell_count).as_str());
     }
-
 
     // dbg!(file_content);
     // print!("{}",file_content);
@@ -240,8 +227,7 @@ fn main() {
         Ok(_) => println!("Successfully wrote to {display}"),
     }
 
-    std::process::Command
-        ::new("nasm")
+    std::process::Command::new("nasm")
         .arg("-felf64")
         .arg("-g")
         .arg(&filename.replace(".bf", ".asm"))
@@ -249,8 +235,7 @@ fn main() {
         .expect("failed to execute process");
 
     // use ld to link
-    std::process::Command
-        ::new("ld")
+    std::process::Command::new("ld")
         .arg("-o")
         .arg(&out_file_path)
         .arg(&filename.replace(".bf", ".o"))
@@ -258,14 +243,12 @@ fn main() {
         .expect("failed to execute process");
 
     #[cfg(not(debug_assertions))]
-    std::process::Command
-        ::new("rm")
+    std::process::Command::new("rm")
         .arg(&filename.replace(".bf", ".asm"))
         .output()
         .expect("failed to execute process");
 
-    std::process::Command
-        ::new("rm")
+    std::process::Command::new("rm")
         .arg(&filename.replace(".bf", ".o"))
         .output()
         .expect("failed to execute process");

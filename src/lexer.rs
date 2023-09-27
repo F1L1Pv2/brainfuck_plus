@@ -2,7 +2,8 @@ use std::process::exit;
 
 use crate::common::{Token, TokenType};
 
-#[must_use] pub fn lex_file(contents: String) -> Vec<Token> {
+#[must_use]
+pub fn lex_file(contents: String) -> Vec<Token> {
     let mut comment_single = false;
     let mut comment_mul = false;
     let mut i: usize = 0;
@@ -298,14 +299,15 @@ use crate::common::{Token, TokenType};
                                         }
                                         tokens.push(Token {
                                             token_type: TokenType::StringLit,
-                                            value: new_str.replace("\\n", "\n").replace("\\0", "\0"),
+                                            value: new_str
+                                                .replace("\\n", "\n")
+                                                .replace("\\0", "\0"),
                                         });
                                     } else {
                                         println!("Expected \" at the end of string lit");
                                         exit(1);
                                     }
-                                } 
-                                else if word.starts_with('(') {
+                                } else if word.starts_with('(') {
                                     if word.ends_with(')') {
                                         let mut new_str: String = String::new();
                                         let len: usize = word.len() - 1;
@@ -321,9 +323,7 @@ use crate::common::{Token, TokenType};
                                         println!("Expected ) at the end of include path");
                                         exit(1);
                                     }
-                                }  
-                                else if word.starts_with('{') {
-
+                                } else if word.starts_with('{') {
                                     if word.ends_with('}') {
                                         let mut new_str: String = String::new();
                                         let len: usize = word.len() - 1;
@@ -335,13 +335,10 @@ use crate::common::{Token, TokenType};
                                             token_type: TokenType::TapeName,
                                             value: new_str,
                                         });
-                                    } 
-                                    
-                                    else {
+                                    } else {
                                         println!("Expected }} at the end of tape name");
                                         exit(1);
                                     }
-
                                 } else {
                                     let mut is_number = true;
                                     for ch in word.chars() {

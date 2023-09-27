@@ -1,7 +1,7 @@
-use std::process::exit;
+use crate::lex_file;
 use std::fs;
 use std::path::Path;
-use crate::lex_file;
+use std::process::exit;
 
 // use std::process::exit;
 use crate::common::{Size, Tape, Token, TokenType};
@@ -12,7 +12,8 @@ pub struct Macro {
     pub tokens: Vec<Token>,
 }
 
-#[must_use] pub fn is_macro(name: String, macros: &[Macro]) -> Option<Macro> {
+#[must_use]
+pub fn is_macro(name: String, macros: &[Macro]) -> Option<Macro> {
     let mut macroms: Option<Macro> = None;
     for macrom in macros {
         if name == macrom.name {
@@ -73,16 +74,19 @@ fn unwrap_macros(tokens: Vec<Token>, macros: Vec<Macro>) -> Vec<Token> {
 }
 
 fn is_macro_token(token_type: TokenType) -> bool {
-    token_type == TokenType::MacroDecl ||
-        token_type == TokenType::IfdefMacro ||
-        token_type == TokenType::IfNdefMacro ||
-        token_type == TokenType::ElseMacro ||
-        token_type == TokenType::EndifMacro ||
-        token_type == TokenType::TapeDecl
+    token_type == TokenType::MacroDecl
+        || token_type == TokenType::IfdefMacro
+        || token_type == TokenType::IfNdefMacro
+        || token_type == TokenType::ElseMacro
+        || token_type == TokenType::EndifMacro
+        || token_type == TokenType::TapeDecl
 }
 
 fn preprocess_macro_decl(i: &mut usize, tokens: &[Token], macros: &mut Vec<Macro>) {
-    let mut macrom: Macro = Macro { name: String::new(), tokens: Vec::new() };
+    let mut macrom: Macro = Macro {
+        name: String::new(),
+        tokens: Vec::new(),
+    };
 
     *i += 1; // move to indent
 
@@ -129,7 +133,7 @@ fn preprocess_ifdef_macro(
     tokens: &[Token],
     new_tokens: &mut Vec<Token>,
     macros: &mut Vec<Macro>,
-    tapes: &mut Vec<Tape>
+    tapes: &mut Vec<Tape>,
 ) {
     *i += 1;
 
@@ -155,14 +159,13 @@ fn preprocess_ifdef_macro(
     };
 
     if is_defined {
-        while
-            tokens[*i].token_type != TokenType::ElseMacro &&
-            tokens[*i].token_type != TokenType::EndifMacro
+        while tokens[*i].token_type != TokenType::ElseMacro
+            && tokens[*i].token_type != TokenType::EndifMacro
         {
             let token: Token = tokens[*i].clone();
 
             if is_macro_token(token.token_type.clone()) {
-                preprocess_macro(i, tokens, new_tokens, macros,tapes);
+                preprocess_macro(i, tokens, new_tokens, macros, tapes);
             } else {
                 new_tokens.push(token);
                 *i += 1;
@@ -177,9 +180,8 @@ fn preprocess_ifdef_macro(
 
         *i += 1; // skip endif token
     } else {
-        while
-            tokens[*i].token_type != TokenType::ElseMacro &&
-            tokens[*i].token_type != TokenType::EndifMacro
+        while tokens[*i].token_type != TokenType::ElseMacro
+            && tokens[*i].token_type != TokenType::EndifMacro
         {
             *i += 1;
         }
@@ -190,7 +192,7 @@ fn preprocess_ifdef_macro(
                 let token: Token = tokens[*i].clone();
 
                 if is_macro_token(token.token_type.clone()) {
-                    preprocess_macro(i, tokens, new_tokens, macros,tapes);
+                    preprocess_macro(i, tokens, new_tokens, macros, tapes);
                 } else {
                     new_tokens.push(token);
                     *i += 1;
@@ -205,7 +207,7 @@ fn preprocess_ifndef_macro(
     tokens: &[Token],
     new_tokens: &mut Vec<Token>,
     macros: &mut Vec<Macro>,
-    tapes: &mut Vec<Tape>
+    tapes: &mut Vec<Tape>,
 ) {
     *i += 1;
 
@@ -231,9 +233,8 @@ fn preprocess_ifndef_macro(
     };
 
     if !is_defined {
-        while
-            tokens[*i].token_type != TokenType::ElseMacro &&
-            tokens[*i].token_type != TokenType::EndifMacro
+        while tokens[*i].token_type != TokenType::ElseMacro
+            && tokens[*i].token_type != TokenType::EndifMacro
         {
             let token: Token = tokens[*i].clone();
 
@@ -253,9 +254,8 @@ fn preprocess_ifndef_macro(
 
         *i += 1; // skip endif token
     } else {
-        while
-            tokens[*i].token_type != TokenType::ElseMacro &&
-            tokens[*i].token_type != TokenType::EndifMacro
+        while tokens[*i].token_type != TokenType::ElseMacro
+            && tokens[*i].token_type != TokenType::EndifMacro
         {
             *i += 1;
         }
@@ -277,15 +277,18 @@ fn preprocess_ifndef_macro(
     }
 }
 
-fn preprocess_tape_decl(i: &mut usize, tokens: &[Token], tapes: &mut Vec<Tape>){
-    
-    let mut tape = Tape{name: String::new(), size: Size::Byte, cell_count: 0};
+fn preprocess_tape_decl(i: &mut usize, tokens: &[Token], tapes: &mut Vec<Tape>) {
+    let mut tape = Tape {
+        name: String::new(),
+        size: Size::Byte,
+        cell_count: 0,
+    };
 
     *i += 1;
 
     let name = tokens[*i].clone();
 
-    if name.token_type != TokenType::Ident{
+    if name.token_type != TokenType::Ident {
         println!("TapeDecl: Expected identifier");
         exit(1);
     }
@@ -296,13 +299,15 @@ fn preprocess_tape_decl(i: &mut usize, tokens: &[Token], tapes: &mut Vec<Tape>){
 
     let size = tokens[*i].clone();
 
-    if size.token_type != TokenType::CellSize{
-        println!("TapeDecl({}): Expected CellSize (byte, word, dword, qword) got {}",tape.name, size.value);
+    if size.token_type != TokenType::CellSize {
+        println!(
+            "TapeDecl({}): Expected CellSize (byte, word, dword, qword) got {}",
+            tape.name, size.value
+        );
         exit(1);
     }
 
-    tape.size = match size.value.as_str(){
-
+    tape.size = match size.value.as_str() {
         "byte" => Size::Byte,
 
         "word" => Size::Word,
@@ -321,8 +326,11 @@ fn preprocess_tape_decl(i: &mut usize, tokens: &[Token], tapes: &mut Vec<Tape>){
 
     let cell_count = tokens[*i].clone();
 
-    if cell_count.token_type != TokenType::IntLit{
-        println!("TapeDecl({}): Expected IntLit got {}",tape.name, size.value);
+    if cell_count.token_type != TokenType::IntLit {
+        println!(
+            "TapeDecl({}): Expected IntLit got {}",
+            tape.name, size.value
+        );
         exit(1);
     }
 
@@ -330,13 +338,15 @@ fn preprocess_tape_decl(i: &mut usize, tokens: &[Token], tapes: &mut Vec<Tape>){
 
     *i += 1;
 
-    if tokens[*i].token_type != TokenType::NewLine{
-        println!("TapeDecl({}): Expected a new line got {}",tape.name, size.value);
+    if tokens[*i].token_type != TokenType::NewLine {
+        println!(
+            "TapeDecl({}): Expected a new line got {}",
+            tape.name, size.value
+        );
         exit(1);
     }
 
     tapes.push(tape);
-
 }
 
 fn preprocess_macro(
@@ -344,7 +354,7 @@ fn preprocess_macro(
     tokens: &[Token],
     new_tokens: &mut Vec<Token>,
     macros: &mut Vec<Macro>,
-    tapes: &mut Vec<Tape>
+    tapes: &mut Vec<Tape>,
 ) {
     // let macrom: Macro = Macro{name: String::new(), tokens: Vec::new()};
     let token: Token = tokens[*i].clone();
@@ -355,7 +365,7 @@ fn preprocess_macro(
         }
 
         TokenType::IfdefMacro => {
-            preprocess_ifdef_macro(i, tokens, new_tokens, macros,tapes);
+            preprocess_ifdef_macro(i, tokens, new_tokens, macros, tapes);
         }
 
         TokenType::IfNdefMacro => {
@@ -377,7 +387,10 @@ fn preprocess_macro(
         }
 
         _ => {
-            println!("Unreachable, there are only macro tokens got {}", token.value);
+            println!(
+                "Unreachable, there are only macro tokens got {}",
+                token.value
+            );
             exit(1);
         }
     }
@@ -411,7 +424,7 @@ fn preprocess_include(
     path: &String,
     new_tokens: &mut Vec<Token>,
     includes: &Vec<String>,
-    _tapes:  &mut Vec<Tape>
+    _tapes: &mut Vec<Tape>,
 ) {
     let token = tokens[*i].clone();
 
@@ -422,7 +435,9 @@ fn preprocess_include(
         *i += 1;
         let file_name: Token = tokens[*i].clone();
 
-        if file_name.token_type != TokenType::StringLit && file_name.token_type != TokenType::IncludePath {
+        if file_name.token_type != TokenType::StringLit
+            && file_name.token_type != TokenType::IncludePath
+        {
             println!("IncludeDecl: Expected String Literal or Include Path");
             exit(1);
         }
@@ -430,18 +445,18 @@ fn preprocess_include(
         *i += 1;
 
         let filename: String = {
-            if file_name.token_type == TokenType::StringLit{
+            if file_name.token_type == TokenType::StringLit {
                 path.clone() + file_name.value.as_str()
-            }else{
+            } else {
                 let include_path: Vec<&str> = file_name.value.split('/').collect::<Vec<&str>>();
-                let len: usize = include_path.len()-1;
+                let len: usize = include_path.len() - 1;
                 let mut exists: Option<String> = None;
-                for path in includes{
+                for path in includes {
                     let path_arr = path.split('/').collect::<Vec<&str>>();
                     let path_len = path_arr.len();
                     let mut path_str = {
                         let mut path = String::new();
-                        for folder in path_arr.iter().take(path_len-len){
+                        for folder in path_arr.iter().take(path_len - len) {
                             path += folder;
                             path += "/";
                         }
@@ -449,7 +464,7 @@ fn preprocess_include(
                     };
                     path_str += file_name.value.as_str();
                     let path_path = Path::new(path_str.as_str());
-                    if path_path.exists(){
+                    if path_path.exists() {
                         exists = Some(path_str);
                         break;
                     }
@@ -457,15 +472,14 @@ fn preprocess_include(
                     dbg!(&path_str);
                 }
                 let out;
-                if let Some(exists) = exists{
+                if let Some(exists) = exists {
                     out = exists;
-                }else{
-                    println!("Could not find include: {}",file_name.value);
+                } else {
+                    println!("Could not find include: {}", file_name.value);
                     exit(1);
                 }
 
                 out
-                
             }
         };
 
@@ -483,21 +497,29 @@ fn preprocess_include(
             exit(1);
         }
 
-        let contents = fs::read_to_string(filename.clone()).expect("Something went wrong reading the file");
+        let contents =
+            fs::read_to_string(filename.clone()).expect("Something went wrong reading the file");
 
         let file_tokens = lex_file(contents);
 
         let mut file_i: usize = 0;
         let file_len: usize = file_tokens.len();
 
-        while file_i < file_len{
+        while file_i < file_len {
             if token.token_type.clone() != TokenType::IncludeMacro {
                 new_tokens.push(token.clone());
-                file_i+=1;
-            }else{
-                preprocess_include(&mut file_i, &file_tokens, filename.clone(), path, new_tokens, includes, _tapes);
+                file_i += 1;
+            } else {
+                preprocess_include(
+                    &mut file_i,
+                    &file_tokens,
+                    filename.clone(),
+                    path,
+                    new_tokens,
+                    includes,
+                    _tapes,
+                );
             }
-            
         }
 
         // dbg!(file_tokens);
@@ -508,13 +530,27 @@ fn preprocess_include(
     }
 }
 
-fn include_includes(tokens: Vec<Token>, current_path: String, path: String, includes: Vec<String>, tapes: &mut Vec<Tape>) -> Vec<Token> {
+fn include_includes(
+    tokens: Vec<Token>,
+    current_path: String,
+    path: String,
+    includes: Vec<String>,
+    tapes: &mut Vec<Tape>,
+) -> Vec<Token> {
     let mut i: usize = 0;
     let len: usize = tokens.len();
     let mut new_tokens: Vec<Token> = Vec::new();
 
     while i < len {
-        preprocess_include(&mut i, &tokens,  current_path.clone(),&path, &mut new_tokens, &includes, tapes);
+        preprocess_include(
+            &mut i,
+            &tokens,
+            current_path.clone(),
+            &path,
+            &mut new_tokens,
+            &includes,
+            tapes,
+        );
     }
 
     // dbg!(&new_tokens);
@@ -522,9 +558,14 @@ fn include_includes(tokens: Vec<Token>, current_path: String, path: String, incl
     new_tokens
 }
 
-pub fn preprocess_tokens(tokens: Vec<Token>, current_path: String, path: String, includes: Vec<String>, tapes: &mut Vec<Tape>) -> Vec<Token> {
-    
-    let new_tokens = include_includes(tokens, current_path,path, includes, tapes);
+pub fn preprocess_tokens(
+    tokens: Vec<Token>,
+    current_path: String,
+    path: String,
+    includes: Vec<String>,
+    tapes: &mut Vec<Tape>,
+) -> Vec<Token> {
+    let new_tokens = include_includes(tokens, current_path, path, includes, tapes);
 
     let (new_tokens, macros) = preprocess_macros(new_tokens, tapes);
 

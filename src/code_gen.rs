@@ -42,64 +42,52 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
     // let mut mem_dbg_ln = 0;
 
     let len = operations.len();
-    
+
     let jumps = cross_reference(&operations);
     // let jumps = cross_reference(&operations);
 
     let mut current_tape = 0;
-    
-    for (i,operation) in operations.iter().enumerate() {
+
+    for (i, operation) in operations.iter().enumerate() {
         // for i in 0..len {
         //     let ch = contents.chars().nth(i).unwrap();
-                
-        let tape: Tape = if let Some(tape_val) = operation.tape.clone(){
+
+        let tape: Tape = if let Some(tape_val) = operation.tape.clone() {
             tape_val
-        }else{
+        } else {
             tapes[current_tape].clone()
         };
 
-        let cell_size: usize = match tape.size{
-            Size::Byte =>{
-                1
-            }
+        let cell_size: usize = match tape.size {
+            Size::Byte => 1,
 
-            Size::Word=>{
-                2
-            }
+            Size::Word => 2,
 
-            Size::Dword=>{
-                4
-            }
+            Size::Dword => 4,
 
-            Size::Qword=>{
-                8
-            }
+            Size::Qword => 8,
         };
 
-        let cell_size_str: &str = match tape.size{
-            Size::Byte =>{
-                "BYTE"
-            }
+        let cell_size_str: &str = match tape.size {
+            Size::Byte => "BYTE",
 
-            Size::Word=>{
-                "WORD"
-            }
+            Size::Word => "WORD",
 
-            Size::Dword=>{
-                "DWORD"
-            }
+            Size::Dword => "DWORD",
 
-            Size::Qword=>{
-                "QWORD"
-            }
+            Size::Qword => "QWORD",
         };
 
         let mem_size = tape.cell_count * cell_size;
 
-        if operation.token_type != TokenType::NewLine{
-
-            file_content.push_str(format!("    ; ---------   {:?} x {} ( {} )  --------- ;\n",operation.token_type,operation.count, tape.name).as_str());
-
+        if operation.token_type != TokenType::NewLine {
+            file_content.push_str(
+                format!(
+                    "    ; ---------   {:?} x {} ( {} )  --------- ;\n",
+                    operation.token_type, operation.count, tape.name
+                )
+                .as_str(),
+            );
         }
 
         match operation.token_type {
@@ -109,25 +97,53 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
 
                 //check if pointer is at the end
 
-                file_content
-                    .push_str(format!("    cmp QWORD[{}_pointer], {}\n",tape.name, mem_size - cell_size).as_str());
+                file_content.push_str(
+                    format!(
+                        "    cmp QWORD[{}_pointer], {}\n",
+                        tape.name,
+                        mem_size - cell_size
+                    )
+                    .as_str(),
+                );
                 file_content.push_str(format!("    je .bound_{i}\n").as_str());
-                file_content.push_str(format!("    add QWORD[{}_pointer], {}\n",tape.name, operation.count*cell_size).as_str());
+                file_content.push_str(
+                    format!(
+                        "    add QWORD[{}_pointer], {}\n",
+                        tape.name,
+                        operation.count * cell_size
+                    )
+                    .as_str(),
+                );
                 file_content.push_str(format!("    jmp .skip_{i}\n").as_str());
                 file_content.push_str(format!("    .bound_{i}:\n").as_str());
-                file_content.push_str(format!("        mov QWORD[{}_pointer], 0\n", tape.name).as_str());
+                file_content
+                    .push_str(format!("        mov QWORD[{}_pointer], 0\n", tape.name).as_str());
                 file_content.push_str(format!("    .skip_{i}:\n").as_str());
             }
             // '<' => {
             TokenType::PointerLeft => {
                 //check if pointer is zero
-                file_content.push_str(format!("    cmp QWORD[{}_pointer], 0\n", tape.name).as_str());
+                file_content
+                    .push_str(format!("    cmp QWORD[{}_pointer], 0\n", tape.name).as_str());
                 file_content.push_str(format!("    je .bound_{i}\n").as_str());
-                file_content.push_str(format!("    sub QWORD[{}_pointer], {}\n",tape.name, operation.count*cell_size).as_str());
+                file_content.push_str(
+                    format!(
+                        "    sub QWORD[{}_pointer], {}\n",
+                        tape.name,
+                        operation.count * cell_size
+                    )
+                    .as_str(),
+                );
                 file_content.push_str(format!("    jmp .skip_{i}\n").as_str());
                 file_content.push_str(format!("    .bound_{i}:\n").as_str());
-                file_content
-                    .push_str(format!("        mov QWORD[{}_pointer], {}\n", tape.name , mem_size - cell_size).as_str());
+                file_content.push_str(
+                    format!(
+                        "        mov QWORD[{}_pointer], {}\n",
+                        tape.name,
+                        mem_size - cell_size
+                    )
+                    .as_str(),
+                );
                 file_content.push_str(format!("    .skip_{i}:\n").as_str());
 
                 // file_content.push_str("    sub QWORD[pointer], 1\n");
@@ -137,7 +153,8 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
                 // put current mem addr into cell
                 // file_content.push_str(format!("debug_mem_{}:\n", mem_dbg_ln).as_str());
                 file_content.push_str(format!("    mov rax, {}\n", tape.name).as_str());
-                file_content.push_str(format!("    add rax, QWORD[{}_pointer]\n",tape.name).as_str());
+                file_content
+                    .push_str(format!("    add rax, QWORD[{}_pointer]\n", tape.name).as_str());
                 file_content.push_str("    mov rbx, rax\n");
                 file_content.push_str("    mov QWORD[rax], rbx\n");
                 // mem_dbg_ln += 1;
@@ -147,7 +164,8 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
             TokenType::BaseMemAddr => {
                 // put base mem addr into cell
                 file_content.push_str(format!("    mov rax, {}\n", tape.name).as_str());
-                file_content.push_str(format!("    add rax, QWORD[{}_pointer]\n",tape.name).as_str());
+                file_content
+                    .push_str(format!("    add rax, QWORD[{}_pointer]\n", tape.name).as_str());
                 file_content.push_str(format!("    mov rbx, {}\n", tape.name).as_str());
                 file_content.push_str("    mov QWORD[rax], rbx\n");
             }
@@ -155,14 +173,16 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
             // '&' => {
             TokenType::PointerReset => {
                 // set pointer to 0
-                file_content.push_str(format!("    mov QWORD[{}_pointer], 0\n", tape.name).as_str());
+                file_content
+                    .push_str(format!("    mov QWORD[{}_pointer], 0\n", tape.name).as_str());
             }
 
             // '?' => {
             TokenType::Syscall => {
                 // perform syscall
                 file_content.push_str(format!("    mov rbx, {}\n", tape.name).as_str());
-                file_content.push_str(format!("    add rbx, QWORD[{}_pointer]\n", tape.name).as_str());
+                file_content
+                    .push_str(format!("    add rbx, QWORD[{}_pointer]\n", tape.name).as_str());
                 file_content.push_str("    mov rax, QWORD[rbx]\n");
                 file_content.push_str("    add rbx, 8\n");
                 file_content.push_str("    mov rdi, QWORD[rbx]\n");
@@ -178,105 +198,98 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
                 file_content.push_str("    mov r9, QWORD[rbx]\n");
                 file_content.push_str("    syscall\n");
                 file_content.push_str(format!("    mov rbx, {}\n", tape.name).as_str());
-                file_content.push_str(format!("    add rbx, QWORD[{}_pointer]\n", tape.name).as_str());
+                file_content
+                    .push_str(format!("    add rbx, QWORD[{}_pointer]\n", tape.name).as_str());
                 file_content.push_str("    push rax\n");
             }
 
             // '\'' => {
             TokenType::Clear => {
                 // clear current cell
-                file_content.push_str(format!("   mov rax, {}\n",tape.name).as_str());
-                file_content.push_str(format!("   add rax, QWORD[{}_pointer]\n",tape.name).as_str());
+                file_content.push_str(format!("   mov rax, {}\n", tape.name).as_str());
+                file_content
+                    .push_str(format!("   add rax, QWORD[{}_pointer]\n", tape.name).as_str());
                 file_content.push_str(format!("   mov {cell_size_str}[rax], 0\n").as_str());
             }
-            
+
             // '+' => {
-                TokenType::Add => {
-                    file_content.push_str(format!("    mov rax, {}\n",tape.name).as_str());
-                    file_content.push_str(format!("    add rax, QWORD[{}_pointer]\n",tape.name).as_str());
-                    file_content.push_str(format!("    add {} [rax], {}\n",cell_size_str,operation.count).as_str());
-                }
-                
-                TokenType::IntLit => {
-                    // println!("Not implemented yet");
-                    // exit(1);
-                    file_content.push_str(format!("    mov rax, {}\n",tape.name).as_str());
-                    file_content.push_str(format!("    add rax, QWORD[{}_pointer]\n",tape.name).as_str());
-                    file_content.push_str(format!("    mov {}[rax], {}\n",cell_size_str,operation.values[0]).as_str());
-                }
-                
-                TokenType::StringLit => {
-                    file_content.push_str(format!("    mov rax, {}\n",tape.name).as_str());
-                    file_content.push_str(format!("    add rax, QWORD[{}_pointer]\n",tape.name).as_str());
-                    
-                    let str_val = operation.values[0].clone();
-                    let len = str_val.len();
-                    for n in 0..len{
-                        let val = str_val.chars().nth(n).unwrap();
-                        file_content.push_str(format!("    mov BYTE [rax], {}\n",val as u8).as_str());
-                        file_content.push_str("    add rax, 1\n");
-                    }
+            TokenType::Add => {
+                file_content.push_str(format!("    mov rax, {}\n", tape.name).as_str());
+                file_content
+                    .push_str(format!("    add rax, QWORD[{}_pointer]\n", tape.name).as_str());
+                file_content.push_str(
+                    format!("    add {} [rax], {}\n", cell_size_str, operation.count).as_str(),
+                );
+            }
 
+            TokenType::IntLit => {
+                // println!("Not implemented yet");
+                // exit(1);
+                file_content.push_str(format!("    mov rax, {}\n", tape.name).as_str());
+                file_content
+                    .push_str(format!("    add rax, QWORD[{}_pointer]\n", tape.name).as_str());
+                file_content.push_str(
+                    format!("    mov {}[rax], {}\n", cell_size_str, operation.values[0]).as_str(),
+                );
+            }
 
+            TokenType::StringLit => {
+                file_content.push_str(format!("    mov rax, {}\n", tape.name).as_str());
+                file_content
+                    .push_str(format!("    add rax, QWORD[{}_pointer]\n", tape.name).as_str());
+
+                let str_val = operation.values[0].clone();
+                let len = str_val.len();
+                for n in 0..len {
+                    let val = str_val.chars().nth(n).unwrap();
+                    file_content.push_str(format!("    mov BYTE [rax], {}\n", val as u8).as_str());
+                    file_content.push_str("    add rax, 1\n");
                 }
+            }
 
-                TokenType::StackDel => {
-                    file_content.push_str("    pop rax\n");
-                }
+            TokenType::StackDel => {
+                file_content.push_str("    pop rax\n");
+            }
 
-                TokenType::Push => {
-                file_content.push_str(format!("    mov rax, {}\n",tape.name).as_str());
-                file_content.push_str(format!("    add rax, QWORD[{}_pointer]\n",tape.name).as_str());
+            TokenType::Push => {
+                file_content.push_str(format!("    mov rax, {}\n", tape.name).as_str());
+                file_content
+                    .push_str(format!("    add rax, QWORD[{}_pointer]\n", tape.name).as_str());
                 file_content.push_str("    mov rbx, 0\n");
 
-                let rbx = match tape.size{
-                    Size::Byte => {
-                        "bl"
-                    }
+                let rbx = match tape.size {
+                    Size::Byte => "bl",
 
-                    Size::Word => {
-                        "bx"
-                    }
+                    Size::Word => "bx",
 
-                    Size::Dword => {
-                        "ebx"
-                    }
+                    Size::Dword => "ebx",
 
-                    Size::Qword => {
-                        "rbx"
-                    }
+                    Size::Qword => "rbx",
                 };
 
                 file_content.push_str(format!("    mov {rbx}, {cell_size_str}[rax]\n").as_str());
-                for _ in 0..operation.count{
+                for _ in 0..operation.count {
                     file_content.push_str("    push rbx\n");
                 }
             }
 
             TokenType::Pop => {
-                file_content.push_str(format!("    mov rax, {}\n",tape.name).as_str());
-                file_content.push_str(format!("    add rax, QWORD[{}_pointer]\n",tape.name).as_str());
+                file_content.push_str(format!("    mov rax, {}\n", tape.name).as_str());
+                file_content
+                    .push_str(format!("    add rax, QWORD[{}_pointer]\n", tape.name).as_str());
                 file_content.push_str("    mov rbx, 0\n");
-                for _ in 0..operation.count{
+                for _ in 0..operation.count {
                     file_content.push_str("    pop rbx\n");
                 }
 
-                let rbx = match tape.size{
-                    Size::Byte => {
-                        "bl"
-                    }
+                let rbx = match tape.size {
+                    Size::Byte => "bl",
 
-                    Size::Word => {
-                        "bx"
-                    }
+                    Size::Word => "bx",
 
-                    Size::Dword => {
-                        "ebx"
-                    }
+                    Size::Dword => "ebx",
 
-                    Size::Qword => {
-                        "rbx"
-                    }
+                    Size::Qword => "rbx",
                 };
 
                 file_content.push_str(format!("    mov {cell_size_str}[rax], {rbx}\n").as_str());
@@ -284,19 +297,23 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
 
             // '-' => {
             TokenType::Sub => {
-                file_content.push_str(format!("    mov rax, {}\n",tape.name).as_str());
-                file_content.push_str(format!("    add rax, QWORD[{}_pointer]\n",tape.name).as_str());
-                file_content.push_str(format!("    sub {}[rax], {}\n",cell_size_str,operation.count).as_str());
+                file_content.push_str(format!("    mov rax, {}\n", tape.name).as_str());
+                file_content
+                    .push_str(format!("    add rax, QWORD[{}_pointer]\n", tape.name).as_str());
+                file_content.push_str(
+                    format!("    sub {}[rax], {}\n", cell_size_str, operation.count).as_str(),
+                );
             }
             // '.' => {
             TokenType::WriteByte => {
                 file_content.push_str("    mov rax, 1\n");
                 file_content.push_str("    mov rdi, 1\n");
-                file_content.push_str(format!("    mov rsi, {}\n",tape.name).as_str());
-                file_content.push_str(format!("    add rsi, QWORD[{}_pointer]\n",tape.name).as_str());
-                
+                file_content.push_str(format!("    mov rsi, {}\n", tape.name).as_str());
+                file_content
+                    .push_str(format!("    add rsi, QWORD[{}_pointer]\n", tape.name).as_str());
+
                 //TODO: handle writing bigger tapes properly
-                
+
                 file_content.push_str("    mov rdx, 1\n");
                 file_content.push_str("    syscall\n");
             }
@@ -304,9 +321,10 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
             TokenType::ReadByte => {
                 file_content.push_str("    mov rax, 0\n");
                 file_content.push_str("    mov rdi, 0\n");
-                file_content.push_str(format!("    mov rsi, {}\n",tape.name).as_str());
-                file_content.push_str(format!("    add rsi, QWORD[{}_pointer]\n",tape.name).as_str());
-                
+                file_content.push_str(format!("    mov rsi, {}\n", tape.name).as_str());
+                file_content
+                    .push_str(format!("    add rsi, QWORD[{}_pointer]\n", tape.name).as_str());
+
                 //TODO: handle writing bigger tapes properly
 
                 file_content.push_str("    mov rdx, 1\n");
@@ -314,26 +332,19 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
             }
             // '[' => {
             TokenType::ZeroJump => {
-                file_content.push_str(format!("    mov rax, {}\n",tape.name).as_str());
-                file_content.push_str(format!("    add rax, QWORD[{}_pointer]\n",tape.name).as_str());
+                file_content.push_str(format!("    mov rax, {}\n", tape.name).as_str());
+                file_content
+                    .push_str(format!("    add rax, QWORD[{}_pointer]\n", tape.name).as_str());
                 file_content.push_str("    mov rdx, 0\n");
 
-                let rdx = match tape.size{
-                    Size::Byte => {
-                        "dl"
-                    }
+                let rdx = match tape.size {
+                    Size::Byte => "dl",
 
-                    Size::Word => {
-                        "dx"
-                    }
+                    Size::Word => "dx",
 
-                    Size::Dword => {
-                        "edx"
-                    }
+                    Size::Dword => "edx",
 
-                    Size::Qword => {
-                        "rdx"
-                    }
+                    Size::Qword => "rdx",
                 };
 
                 file_content.push_str(format!("    mov {rdx}, {cell_size_str}[rax]\n").as_str());
@@ -363,26 +374,19 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
             }
             // ']' => {
             TokenType::NonZeroJump => {
-                file_content.push_str(format!("    mov rax, {}\n",tape.name).as_str());
-                file_content.push_str(format!("    add rax, QWORD[{}_pointer]\n",tape.name).as_str());
+                file_content.push_str(format!("    mov rax, {}\n", tape.name).as_str());
+                file_content
+                    .push_str(format!("    add rax, QWORD[{}_pointer]\n", tape.name).as_str());
                 file_content.push_str("    mov rdx, 0\n");
 
-                let rdx = match tape.size{
-                    Size::Byte => {
-                        "dl"
-                    }
+                let rdx = match tape.size {
+                    Size::Byte => "dl",
 
-                    Size::Word => {
-                        "dx"
-                    }
+                    Size::Word => "dx",
 
-                    Size::Dword => {
-                        "edx"
-                    }
+                    Size::Dword => "edx",
 
-                    Size::Qword => {
-                        "rdx"
-                    }
+                    Size::Qword => "rdx",
                 };
 
                 file_content.push_str(format!("    mov {rdx}, {cell_size_str}[rax]\n").as_str());
@@ -410,19 +414,15 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
                 file_content.push_str(format!("    jne .condition_{condition_id}\n").as_str());
                 file_content.push_str(format!("    .forward_{forward_id}:\n").as_str());
             }
-            TokenType::CurrentTape =>{
-
-                
+            TokenType::CurrentTape => {
                 if let Some(tape) = operation.tape.clone() {
-
-                    for (n,tapem) in tapes.iter().enumerate(){
-                        if tapem.name == tape.name{
+                    for (n, tapem) in tapes.iter().enumerate() {
+                        if tapem.name == tape.name {
                             current_tape = n;
                             break;
                         }
                     }
-
-                }else{
+                } else {
                     println!("Unreachable something is wrong with pareser");
                     exit(1);
                 }
@@ -445,19 +445,20 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
                 // exit(1);
 
                 let mut exist = false;
-                for tape in tapes{
-                    if tape.name == operation.values[0]{
+                for tape in tapes {
+                    if tape.name == operation.values[0] {
                         exist = true;
                     }
                 }
 
-                if !exist{
+                if !exist {
                     println!("Tape {} isnt defined", operation.values[0]);
                     exit(1);
                 }
 
                 file_content.push_str(format!("    mov rax, {}\n", tape.name).as_str());
-                file_content.push_str(format!("    add rax, QWORD[{}_pointer]\n",tape.name).as_str());
+                file_content
+                    .push_str(format!("    add rax, QWORD[{}_pointer]\n", tape.name).as_str());
                 file_content.push_str(format!("    mov rbx, {}\n", operation.values[0]).as_str());
                 file_content.push_str("    mov QWORD[rax], rbx\n");
             }
@@ -493,11 +494,9 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
             TokenType::Ident => {
                 println!("Idents are not implemented yet");
                 exit(1);
-            }
-
-            // _ => {
-            //     println!("Unreachable: Token {}", token.value);
-            // }
+            } // _ => {
+              //     println!("Unreachable: Token {}", token.value);
+              // }
         }
     }
 }
