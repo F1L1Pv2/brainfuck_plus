@@ -46,6 +46,5 @@ Cells are `short unsigned ints` `(u8)` (for now)
 - [x] Add ability to create multiple mem lines and ability to specify their cell size and max len (in cells)
 - [x] Add Include Dirs and Libs to compiler
 - [ ] Add Ability to call extern functions
-- [ ] Add Ability to pass arguments into macros
 - [x] Add #include
 - [x] Add #ifdef #ifndef #else #endif 

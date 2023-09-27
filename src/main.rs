@@ -272,3 +272,6 @@ fn main() {
 
     println!("Generated executable");
 }
+
+#[cfg(test)]
+mod test;

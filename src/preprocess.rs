@@ -411,7 +411,7 @@ fn preprocess_include(
     path: &String,
     new_tokens: &mut Vec<Token>,
     includes: &Vec<String>,
-    tapes:  &mut Vec<Tape>
+    _tapes:  &mut Vec<Tape>
 ) {
     let token = tokens[*i].clone();
 
@@ -495,7 +495,7 @@ fn preprocess_include(
                 new_tokens.push(token.clone());
                 file_i+=1;
             }else{
-                preprocess_include(&mut file_i, &file_tokens, filename.clone(), path, new_tokens, includes, tapes);
+                preprocess_include(&mut file_i, &file_tokens, filename.clone(), path, new_tokens, includes, _tapes);
             }
             
         }
@@ -523,17 +523,7 @@ fn include_includes(tokens: Vec<Token>, current_path: String, path: String, incl
 }
 
 pub fn preprocess_tokens(tokens: Vec<Token>, current_path: String, path: String, includes: Vec<String>, tapes: &mut Vec<Tape>) -> Vec<Token> {
-    //TODO: Add ability to pass arguments into macros
-    /*
     
-        #include <stdlib.bf>
-
-        #define car(color | type) write(color) `"\n"`. write(type) `"\n"`.
-
-        car(`"red"` | `"toyota"`)
-
-     */
-
     let new_tokens = include_includes(tokens, current_path,path, includes, tapes);
 
     let (new_tokens, macros) = preprocess_macros(new_tokens, tapes);
