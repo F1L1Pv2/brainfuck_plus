@@ -6,7 +6,7 @@ use std::path::Path;
 use std::process::exit;
 
 pub mod common;
-use common::*;
+use common::{MEM_SIZE, Size, Tape};
 
 pub mod lexer;
 use lexer::lex_file;
@@ -16,7 +16,7 @@ use crate::code_gen::generate_code;
 use crate::parser::parse_file;
 
 pub mod preprocess;
-use preprocess::*;
+use preprocess::preprocess_tokens;
 
 pub mod parser;
 
@@ -125,7 +125,7 @@ fn main() {
     }
 
 
-    if libs.len() > 0{
+    if !libs.is_empty(){
         usage(args[0].clone());
         println!("Libs are not currently implemented");
         exit(1);
@@ -198,7 +198,7 @@ fn main() {
 
     file_content.push_str("; -------- tapes -------- ; \n");
     
-    for tape in tapes.iter(){
+    for tape in &tapes{
 
         let size_str = match tape.size{
             Size::Byte => {
@@ -231,13 +231,13 @@ fn main() {
     let display = path.display();
 
     let mut file = match File::create(path) {
-        Err(why) => panic!("Couldn't create {}: {}", display, why),
+        Err(why) => panic!("Couldn't create {display}: {why}"),
         Ok(file) => file,
     };
 
     match file.write_all(file_content.as_bytes()) {
-        Err(why) => panic!("Couldn't write to {}: {}", display, why),
-        Ok(_) => println!("Successfully wrote to {}", display),
+        Err(why) => panic!("Couldn't write to {display}: {why}"),
+        Ok(_) => println!("Successfully wrote to {display}"),
     }
 
     std::process::Command

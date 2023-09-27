@@ -4,7 +4,7 @@ use std::path::Path;
 use crate::lex_file;
 
 // use std::process::exit;
-use crate::common::*;
+use crate::common::{Size, Tape, Token, TokenType};
 
 #[derive(Debug, Clone)]
 pub struct Macro {
@@ -12,9 +12,9 @@ pub struct Macro {
     pub tokens: Vec<Token>,
 }
 
-pub fn is_macro(name: String, macros: &[Macro]) -> Option<Macro> {
+#[must_use] pub fn is_macro(name: String, macros: &[Macro]) -> Option<Macro> {
     let mut macroms: Option<Macro> = None;
-    for macrom in macros.iter() {
+    for macrom in macros {
         if name == macrom.name {
             macroms = Some(macrom.clone());
             break;
@@ -25,7 +25,7 @@ pub fn is_macro(name: String, macros: &[Macro]) -> Option<Macro> {
 
 fn unwrap_macro(uno_macro: Macro, macros: &Vec<Macro>) -> Vec<Token> {
     let mut unwrap_token: Vec<Token> = Vec::new();
-    for token in uno_macro.tokens.iter() {
+    for token in &uno_macro.tokens {
         if token.token_type != TokenType::Ident {
             unwrap_token.push(token.clone());
         } else {
@@ -61,7 +61,7 @@ fn unwrap_macros(tokens: Vec<Token>, macros: Vec<Macro>) -> Vec<Token> {
                 let mut macro_tokens = unwrap_macro(macrom, &macros);
                 next_tokens.append(&mut macro_tokens);
             } else {
-                println!("Undentifier Not defined: {}", name);
+                println!("Undentifier Not defined: {name}");
                 exit(1);
             }
         }
@@ -93,7 +93,7 @@ fn preprocess_macro_decl(i: &mut usize, tokens: &[Token], macros: &mut Vec<Macro
         exit(1);
     }
 
-    for macron in macros.iter() {
+    for macron in &*macros {
         if macro_name.value == macron.name {
             println!("Macro already defined: #define {}", macro_name.value);
             exit(1);
@@ -144,7 +144,7 @@ fn preprocess_ifdef_macro(
 
     let is_defined = {
         let mut answ: bool = false;
-        for macrom in macros.iter() {
+        for macrom in &*macros {
             if macro_name.value == macrom.name {
                 answ = true;
                 break;
@@ -220,7 +220,7 @@ fn preprocess_ifndef_macro(
 
     let is_defined = {
         let mut answ: bool = false;
-        for macrom in macros.iter() {
+        for macrom in &*macros {
             if macro_name.value == macrom.name {
                 answ = true;
                 break;
@@ -406,7 +406,7 @@ fn preprocess_macros(tokens: Vec<Token>, tapes: &mut Vec<Tape>) -> (Vec<Token>, 
 
 fn preprocess_include(
     i: &mut usize,
-    tokens: &Vec<Token>,
+    tokens: &[Token],
     current_path: String,
     path: &String,
     new_tokens: &mut Vec<Token>,
@@ -433,11 +433,11 @@ fn preprocess_include(
             if file_name.token_type == TokenType::StringLit{
                 path.clone() + file_name.value.as_str()
             }else{
-                let include_path: Vec<&str> = file_name.value.split("/").collect::<Vec<&str>>();
+                let include_path: Vec<&str> = file_name.value.split('/').collect::<Vec<&str>>();
                 let len: usize = include_path.len()-1;
                 let mut exists: Option<String> = None;
-                for path in includes.iter(){
-                    let path_arr = path.split("/").collect::<Vec<&str>>();
+                for path in includes{
+                    let path_arr = path.split('/').collect::<Vec<&str>>();
                     let path_len = path_arr.len();
                     let mut path_str = {
                         let mut path = String::new();
@@ -474,7 +474,7 @@ fn preprocess_include(
         // exit(1);
 
         if filename == current_path {
-            println!("IncludeDecl: Cannot include file in itself file: {}",filename);
+            println!("IncludeDecl: Cannot include file in itself file: {filename}");
             exit(1);
         }
 

@@ -1,8 +1,8 @@
 use std::process::exit;
 
-use crate::common::*;
+use crate::common::{Token, TokenType};
 
-pub fn lex_file(contents: String) -> Vec<Token> {
+#[must_use] pub fn lex_file(contents: String) -> Vec<Token> {
     let mut comment_single = false;
     let mut comment_mul = false;
     let mut i: usize = 0;

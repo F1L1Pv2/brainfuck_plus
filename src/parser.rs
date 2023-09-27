@@ -1,7 +1,7 @@
 use std::process::exit;
 
 // use std::process::exit;
-use crate::common::*;
+use crate::common::{Operation, Tape, Token, TokenType};
 
 fn trim_tokens(i: &mut usize, tokens: &Vec<Token>, token_type: TokenType) -> Operation {
     
@@ -23,7 +23,7 @@ fn trim_tokens(i: &mut usize, tokens: &Vec<Token>, token_type: TokenType) -> Ope
     Operation { token_type, count, values, tape: None}
 }
 
-pub fn parse_file(tokens: Vec<Token>, tapes: &Vec<Tape>) -> Vec<Operation> {
+#[must_use] pub fn parse_file(tokens: Vec<Token>, tapes: &[Tape]) -> Vec<Operation> {
     let mut operations: Vec<Operation> = Vec::new();
 
     let mut i: usize = 0;
@@ -67,7 +67,7 @@ pub fn parse_file(tokens: Vec<Token>, tapes: &Vec<Tape>) -> Vec<Operation> {
 
                 let tape = {
                     let mut tape: Option<Tape> = None;
-                    for tapem in tapes.iter(){
+                    for tapem in tapes{
                         if tapem.name == tape_name.value{
                             tape = Some(tapem.clone());
                             break;

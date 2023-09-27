@@ -1,10 +1,10 @@
-use crate::common::*;
+use crate::common::{Condition, Forward, Jumps, Operation, Size, Tape, TokenType};
 use std::process::exit;
 
 fn cross_reference(operations: &[Operation]) -> Vec<Jumps> {
     let mut jumps: Vec<Jumps> = Vec::new();
 
-    for operation in operations.iter() {
+    for operation in operations {
         match operation.token_type {
             TokenType::ZeroJump => {
                 jumps.push(Jumps::Condition(Condition { addr: 0 }));
@@ -111,24 +111,24 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
 
                 file_content
                     .push_str(format!("    cmp QWORD[{}_pointer], {}\n",tape.name, mem_size - cell_size).as_str());
-                file_content.push_str(format!("    je .bound_{}\n", i).as_str());
+                file_content.push_str(format!("    je .bound_{i}\n").as_str());
                 file_content.push_str(format!("    add QWORD[{}_pointer], {}\n",tape.name, operation.count*cell_size).as_str());
-                file_content.push_str(format!("    jmp .skip_{}\n", i).as_str());
-                file_content.push_str(format!("    .bound_{}:\n", i).as_str());
+                file_content.push_str(format!("    jmp .skip_{i}\n").as_str());
+                file_content.push_str(format!("    .bound_{i}:\n").as_str());
                 file_content.push_str(format!("        mov QWORD[{}_pointer], 0\n", tape.name).as_str());
-                file_content.push_str(format!("    .skip_{}:\n", i).as_str());
+                file_content.push_str(format!("    .skip_{i}:\n").as_str());
             }
             // '<' => {
             TokenType::PointerLeft => {
                 //check if pointer is zero
                 file_content.push_str(format!("    cmp QWORD[{}_pointer], 0\n", tape.name).as_str());
-                file_content.push_str(format!("    je .bound_{}\n", i).as_str());
+                file_content.push_str(format!("    je .bound_{i}\n").as_str());
                 file_content.push_str(format!("    sub QWORD[{}_pointer], {}\n",tape.name, operation.count*cell_size).as_str());
-                file_content.push_str(format!("    jmp .skip_{}\n", i).as_str());
-                file_content.push_str(format!("    .bound_{}:\n", i).as_str());
+                file_content.push_str(format!("    jmp .skip_{i}\n").as_str());
+                file_content.push_str(format!("    .bound_{i}:\n").as_str());
                 file_content
                     .push_str(format!("        mov QWORD[{}_pointer], {}\n", tape.name , mem_size - cell_size).as_str());
-                file_content.push_str(format!("    .skip_{}:\n", i).as_str());
+                file_content.push_str(format!("    .skip_{i}:\n").as_str());
 
                 // file_content.push_str("    sub QWORD[pointer], 1\n");
             }
@@ -187,7 +187,7 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
                 // clear current cell
                 file_content.push_str(format!("   mov rax, {}\n",tape.name).as_str());
                 file_content.push_str(format!("   add rax, QWORD[{}_pointer]\n",tape.name).as_str());
-                file_content.push_str(format!("   mov {}[rax], 0\n",cell_size_str).as_str());
+                file_content.push_str(format!("   mov {cell_size_str}[rax], 0\n").as_str());
             }
             
             // '+' => {
@@ -247,7 +247,7 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
                     }
                 };
 
-                file_content.push_str(format!("    mov {rbx}, {}[rax]\n",cell_size_str).as_str());
+                file_content.push_str(format!("    mov {rbx}, {cell_size_str}[rax]\n").as_str());
                 for _ in 0..operation.count{
                     file_content.push_str("    push rbx\n");
                 }
@@ -279,7 +279,7 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
                     }
                 };
 
-                file_content.push_str(format!("    mov {}[rax], {rbx}\n",cell_size_str).as_str());
+                file_content.push_str(format!("    mov {cell_size_str}[rax], {rbx}\n").as_str());
             }
 
             // '-' => {
@@ -336,7 +336,7 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
                     }
                 };
 
-                file_content.push_str(format!("    mov {rdx}, {}[rax]\n",cell_size_str).as_str());
+                file_content.push_str(format!("    mov {rdx}, {cell_size_str}[rax]\n").as_str());
                 file_content.push_str("    cmp rdx, 0\n");
 
                 let mut condition_id = 0;
@@ -358,8 +358,8 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
 
                 let forward_id = condition.addr;
 
-                file_content.push_str(format!("    je .forward_{}\n", forward_id).as_str());
-                file_content.push_str(format!("    .condition_{}:\n", condition_id).as_str());
+                file_content.push_str(format!("    je .forward_{forward_id}\n").as_str());
+                file_content.push_str(format!("    .condition_{condition_id}:\n").as_str());
             }
             // ']' => {
             TokenType::NonZeroJump => {
@@ -385,7 +385,7 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
                     }
                 };
 
-                file_content.push_str(format!("    mov {rdx}, {}[rax]\n",cell_size_str).as_str());
+                file_content.push_str(format!("    mov {rdx}, {cell_size_str}[rax]\n").as_str());
                 file_content.push_str("    cmp rdx, 0\n");
 
                 let mut forward_id = 0;
@@ -407,8 +407,8 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
 
                 let condition_id = forward.back_addr;
 
-                file_content.push_str(format!("    jne .condition_{}\n", condition_id).as_str());
-                file_content.push_str(format!("    .forward_{}:\n", forward_id).as_str());
+                file_content.push_str(format!("    jne .condition_{condition_id}\n").as_str());
+                file_content.push_str(format!("    .forward_{forward_id}:\n").as_str());
             }
             TokenType::CurrentTape =>{
 
