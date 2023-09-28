@@ -45,6 +45,12 @@ pub fn parse_file(tokens: Vec<Token>, tapes: &[Tape]) -> Vec<Operation> {
             TokenType::PointerLeft => {
                 operations.push(trim_tokens(&mut i, &tokens, token.token_type))
             }
+            TokenType::BitwiseLeft => {
+                operations.push(trim_tokens(&mut i, &tokens, token.token_type))
+            }
+            TokenType::BitwiseRight => {
+                operations.push(trim_tokens(&mut i, &tokens, token.token_type))
+            }
 
             TokenType::PointerRight => {
                 operations.push(trim_tokens(&mut i, &tokens, token.token_type))

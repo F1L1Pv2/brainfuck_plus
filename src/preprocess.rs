@@ -277,7 +277,7 @@ fn preprocess_ifndef_macro(
     }
 }
 
-fn preprocess_tape_decl(i: &mut usize, tokens: &[Token], tapes: &mut Vec<Tape>) {
+fn preprocess_tape_decl(i: &mut usize, tokens: &[Token], tapes: &mut Vec<Tape>, macros: &Vec<Macro>) {
     let mut tape = Tape {
         name: String::new(),
         size: Size::Byte,
@@ -324,9 +324,46 @@ fn preprocess_tape_decl(i: &mut usize, tokens: &[Token], tapes: &mut Vec<Tape>) 
 
     *i += 1;
 
-    let cell_count = tokens[*i].clone();
+    let mut cell_count = tokens[*i].clone();
 
-    if cell_count.token_type != TokenType::IntLit {
+    if cell_count.token_type == TokenType::Ident{
+
+        
+        let mut is_macro: bool = false;
+        let mut macro_id: usize = 0;
+        
+        for (n, macrom) in macros.iter().enumerate(){
+            if macrom.name == cell_count.value{
+                is_macro = true;
+                macro_id = n;
+            }
+        }
+        
+        if !is_macro{
+            println!("TapeDecl: Identifier {} not defined", cell_count.value);
+            exit(1);
+        }
+
+        let macrom = macros[macro_id].clone();
+
+        let macro_tokens = unwrap_macro(macrom, macros);
+
+        if macro_tokens.len()>1{
+            println!("TapeDecl: Expected IntLit");
+            exit(1);
+        }
+
+        if macro_tokens[0].token_type != TokenType::IntLit{
+            println!("TapeDecl: Expected IntLit");
+            exit(1);
+        }
+        
+        cell_count = macro_tokens[0].clone();
+
+    }
+
+
+    if cell_count.token_type != TokenType::IntLit  {
         println!(
             "TapeDecl({}): Expected IntLit got {}",
             tape.name, size.value
@@ -383,7 +420,7 @@ fn preprocess_macro(
         }
 
         TokenType::TapeDecl => {
-            preprocess_tape_decl(i, tokens, tapes);
+            preprocess_tape_decl(i, tokens, tapes, macros);
         }
 
         _ => {

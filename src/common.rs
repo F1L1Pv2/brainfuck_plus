@@ -33,6 +33,10 @@ pub enum TokenType {
     TapeName,     // `{main}`
     CurrentTape,  // @`{TapeName}`
     StackDel,     // *
+    BitwiseLeft, // ;
+    BitwiseRight, // :
+    BitwiseAnd, // \
+    BitwiseOr, // |
 }
 
 #[derive(Debug, Clone, PartialEq)]

@@ -132,6 +132,30 @@ pub fn lex_file(contents: String) -> Vec<Token> {
                         value: ch.to_string(),
                     });
                 }
+                ';' => {
+                    tokens.push(Token {
+                        token_type: TokenType::BitwiseLeft,
+                        value: ch.to_string(),
+                    });
+                }
+                ':' => {
+                    tokens.push(Token {
+                        token_type: TokenType::BitwiseRight,
+                        value: ch.to_string(),
+                    });
+                }
+                '|' => {
+                    tokens.push(Token {
+                        token_type: TokenType::BitwiseOr,
+                        value: ch.to_string(),
+                    });
+                }
+                '\\' => {
+                    tokens.push(Token {
+                        token_type: TokenType::BitwiseAnd,
+                        value: ch.to_string(),
+                    });
+                }
 
                 _ => match checker.as_str() {
                     "//" => {

@@ -232,7 +232,83 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
                     format!("    mov {}[rax], {}\n", cell_size_str, operation.values[0]).as_str(),
                 );
             }
+            TokenType::BitwiseAnd => {
+                // println!("Not implemented yet");
+                // exit(1);
+                file_content.push_str(format!("    mov rax, {}\n", tape.name).as_str());
+                file_content
+                    .push_str(format!("    add rax, QWORD[{}_pointer]\n", tape.name).as_str());
+                file_content.push_str("    mov rbx, QWORD[rax]\n");
+                file_content.push_str("   pop rcx\n");
+                file_content.push_str("    and rbx, rcx\n");
+                file_content.push_str("    mov QWORD[rax], rbx\n");
+            }
 
+            TokenType::BitwiseOr => {
+                // println!("Not implemented yet");
+                // exit(1);
+                file_content.push_str(format!("    mov rax, {}\n", tape.name).as_str());
+                file_content
+                    .push_str(format!("    add rax, QWORD[{}_pointer]\n", tape.name).as_str());
+                file_content.push_str("    mov rbx, QWORD[rax]\n");
+                file_content.push_str("   pop rcx\n");
+                file_content.push_str("    or rbx, rcx\n");
+                file_content.push_str("    mov QWORD[rax], rbx\n");
+            }
+
+            TokenType::BitwiseLeft => {
+                // println!("Not implemented yet");
+                // exit(1);
+                file_content.push_str(format!("    mov rax, {}\n", tape.name).as_str());
+                file_content
+                .push_str(format!("    add rax, QWORD[{}_pointer]\n", tape.name).as_str());
+            
+                file_content.push_str("    mov rbx, 0\n");
+                
+                
+                let rbx = match tape.size {
+                    Size::Byte => "bl",
+
+                    Size::Word => "bx",
+                    
+                    Size::Dword => "ebx",
+
+                    Size::Qword => "rbx",
+                };
+
+                file_content.push_str(format!("    mov {}, {}[rax]\n", rbx, cell_size_str).as_str());
+                file_content.push_str(format!("    shl {}, {}\n", rbx, operation.count).as_str());
+
+                file_content.push_str(format!("    mov {}[rax], {}\n", cell_size_str, rbx).as_str());
+
+            }
+            TokenType::BitwiseRight => {
+                // println!("Not implemented yet");
+                // exit(1);
+                file_content.push_str(format!("    mov rax, {}\n", tape.name).as_str());
+                file_content
+                .push_str(format!("    add rax, QWORD[{}_pointer]\n", tape.name).as_str());
+            
+                file_content.push_str("    mov rbx, 0\n");
+                
+                
+                let rbx = match tape.size {
+                    Size::Byte => "bl",
+
+                    Size::Word => "bx",
+                    
+                    Size::Dword => "ebx",
+
+                    Size::Qword => "rbx",
+                };
+
+                file_content.push_str(format!("    mov {}, {}[rax]\n", rbx, cell_size_str).as_str());
+                file_content.push_str(format!("    shr {}, {}\n", rbx, operation.count).as_str());
+
+                file_content.push_str(format!("    mov {}[rax], {}\n", cell_size_str, rbx).as_str());
+
+            }
+            
             TokenType::StringLit => {
                 file_content.push_str(format!("    mov rax, {}\n", tape.name).as_str());
                 file_content
