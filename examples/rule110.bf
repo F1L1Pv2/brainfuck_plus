@@ -1,13 +1,11 @@
 #define buff_size `50`
 #define to_ascii ++++++++++ ++++++++++ ++++++++++ ++++++++++ ++++++++
-#define un_ascii ---------- ---------- ---------- ---------- --------
 
 #tape array byte buff_size
 #tape new_array byte buff_size
-#tape temp_arr byte buff_size
+#tape temp_arr byte `3`
 
 #tape write_buff byte `1024`
-
 #tape iterator byte `1`
 
 #tape syscall qword `4`
@@ -18,7 +16,7 @@
 
 
 // putting 1 at the end of buff_size
-@`{array}` & //`1`
+@`{array}` &
 @`{iterator}` buff_size -
 [
 
@@ -40,85 +38,77 @@
 
 // ---------------------------------
 
-
-
-@`{syscall}` `1` > `1` > `{write_buff}` > buff_size + &
+@`{syscall}` `1` > `1` > `{write_buff}` > buff_size + & // setup syscall for future usage
 
 
 @`{iterator}` buff_size
 [
 
-@`{iterator}` ^
-
-// copying to write_buff and converting into ascii
-@`{array}` &
-@`{new_array}` &
-
-@`{write_buff}` &
-
-@`{iterator}` buff_size
-[
-
-    @`{array}` ^ >
-    @`{write_buff}` _ to_ascii >
-
-    @`{iterator}` -
-]
-
-@`{syscall}` ?*
-
-@`{iterator}` _^
-
-@`{iterator}` buff_size
-
-[
-    // move to current_cell
-    @`{array}` & 
-    @`{new_array}` & 
     @`{iterator}` ^
-    [
-        @`{array}` <
-        @`{new_array}` <
-        @`{iterator}` -
-    ]
 
-    // ------------------------------------------------
+    // copying to write_buff and converting into ascii
+    @`{array}` &
+    @`{new_array}` &
+    @`{write_buff}` &
 
-    // combine 3 cells
-
-    @`{temp}` `0`
-    @`{array}` < ^ >  ^  > ^ < 
-    @`{temp_arr}` _  > _ ; > _ ;; & ^ > ^ > ^ &
-    @`{temp}` ||| ^
-    //to_ascii . `10` .
-
-    // ------------------------------------------------
-
-    // get output from rule
-
-    @`{iterator}` _ //temp is iterator
-    @`{rule}` ^
-
-    @`{iterator}`
+    @`{iterator}` buff_size
     [
 
-        @`{rule}` : 
+        @`{array}` ^ >
+        @`{write_buff}` _ to_ascii >
 
         @`{iterator}` -
     ]
 
-    `1` ^ @`{rule}` \ ^
+    @`{syscall}` ?*
+
+    @`{iterator}` buff_size
+
+    [
+        // move to current_cell
+        @`{array}` & 
+        @`{new_array}` & 
+        @`{iterator}` ^
+        [
+            @`{array}` <
+            @`{new_array}` <
+            @`{iterator}` -
+        ]
+
+        // ------------------------------------------------
+
+        // combine 3 cells
+
+        @`{temp}` `0`
+        @`{array}` < ^ >  ^  > ^ < 
+        @`{temp_arr}` _  > _ ; > _ ;; & ^ > ^ > ^ &
+        @`{temp}` ||| ^
+
+        // ------------------------------------------------
+
+        // get output from rule
+
+        @`{iterator}` _ //temp is iterator
+        @`{rule}` ^
+
+        @`{iterator}`
+        [
+
+            @`{rule}` : 
+
+            @`{iterator}` -
+        ]
+
+        `1` ^ @`{rule}` \ ^
     
-    @`{new_array}` _
+        @`{new_array}` _
 
-    @`{rule}` _
+        @`{rule}` _
 
-    // ------------------------------------------------
+        // ------------------------------------------------
 
-
-
-    @`{iterator}` _ - //updating iterator
-]
+        @`{iterator}` _ - //updating iterator
+    ]
 
     @`{array}` &
     @`{new_array}` &
@@ -133,9 +123,6 @@
 
         @`{iterator}` -
     ]
-    
-    @`{array}` &
-    @`{new_array}` &
 
     @`{iterator}` _ - //updating iterator
 ]
