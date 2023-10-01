@@ -1,7 +1,7 @@
 use std::process::exit;
 
 // use std::process::exit;
-use crate::common::{Operation, Tape, Token, TokenType};
+use crate::prelude::*;
 
 fn trim_tokens(i: &mut usize, tokens: &Vec<Token>, token_type: TokenType) -> Operation {
     let mut count = 0;

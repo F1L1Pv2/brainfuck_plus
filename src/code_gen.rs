@@ -1,4 +1,4 @@
-use crate::common::{Condition, Forward, Jumps, Operation, Size, Tape, TokenType};
+use crate::prelude::*;
 use std::process::exit;
 
 fn cross_reference(operations: &[Operation]) -> Vec<Jumps> {

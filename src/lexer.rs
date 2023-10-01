@@ -1,6 +1,6 @@
 use std::process::exit;
 
-use crate::common::{Token, TokenType};
+use crate::prelude::*;
 
 #[must_use]
 pub fn lex_file(contents: String) -> Vec<Token> {

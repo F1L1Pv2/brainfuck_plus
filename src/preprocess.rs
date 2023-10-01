@@ -4,7 +4,7 @@ use std::path::Path;
 use std::process::exit;
 
 // use std::process::exit;
-use crate::common::{Size, Tape, Token, TokenType};
+use crate::prelude::*;
 
 #[derive(Debug, Clone)]
 pub struct Macro {

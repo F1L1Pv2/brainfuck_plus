@@ -5,8 +5,8 @@ use std::io::Write;
 use std::path::Path;
 use std::process::exit;
 
-pub mod common;
-use common::{Size, Tape, MEM_SIZE};
+pub mod prelude;
+use prelude::*;
 
 pub mod lexer;
 use lexer::lex_file;
