@@ -5,3 +5,11 @@ version = 3
 [[package]]
 name = "brainfuck_plus"
 version = "0.1.0"
+dependencies = [
+ "brainfuck_plus-core",
+]
+
+[[package]]
+name = "brainfuck_plus-core"
+version = "0.1.0"
+source = "git+https://github.com/F1L1Pv2/brainfuck_plus-core#4fba6f18dd0528b8e2ccfdd1642b8d597c7cc164"

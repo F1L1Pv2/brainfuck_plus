@@ -5,6 +5,6 @@
 
 ++++++++++ ++++++++++ ++++++++++ ++++++++++ ++++++++ . `10` . //converting to ascii and showing
 
-`2` :
+`2` : // should give 1
 
 ++++++++++ ++++++++++ ++++++++++ ++++++++++ ++++++++ . `10` . //converting to ascii and showing

@@ -5,20 +5,12 @@ use std::io::Write;
 use std::path::Path;
 use std::process::exit;
 
-pub mod prelude;
-use prelude::*;
+use brainfuck_plus_core::code_gen::generate_code;
+use brainfuck_plus_core::parser::parse_file;
+use brainfuck_plus_core::lexer::lex_file;
 
-pub mod lexer;
-use lexer::lex_file;
-
-pub mod code_gen;
-use crate::code_gen::generate_code;
-use crate::parser::parse_file;
-
-pub mod preprocess;
-use preprocess::preprocess_tokens;
-
-pub mod parser;
+use brainfuck_plus_core::preprocess::preprocess_tokens;
+use brainfuck_plus_core::prelude::*;
 
 fn usage(filename: String) {
     let mut arr = filename.split('/').collect::<Vec<&str>>();
