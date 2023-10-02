@@ -5,7 +5,8 @@ use std::io::Write;
 use std::path::Path;
 use std::process::exit;
 
-use brainfuck_plus_core::code_gen::generate_code;
+mod code_gen;
+use code_gen::generate_code;
 use brainfuck_plus_core::parser::parse_file;
 use brainfuck_plus_core::lexer::lex_file;
 
