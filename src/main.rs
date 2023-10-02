@@ -166,7 +166,7 @@ fn main() {
     file_content.push_str("global _start\n");
     file_content.push_str("_start:\n");
 
-    let tokens = lex_file(contents);
+    let tokens = lex_file(contents, filename.clone());
     // dbg!(&tokens);
     let tokens = preprocess_tokens(tokens, filename.clone(), path, includes, &mut tapes);
     let operations = parse_file(tokens, &tapes);

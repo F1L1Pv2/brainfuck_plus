@@ -1,3 +1,4 @@
 /target
 /examples/*
 !/examples/*.bf
+Cargo.lock
