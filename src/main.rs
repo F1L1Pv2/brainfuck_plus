@@ -217,34 +217,65 @@ fn main() {
 
     match file.write_all(file_content.as_bytes()) {
         Err(why) => panic!("Couldn't write to {display}: {why}"),
-        Ok(_) => println!("Successfully wrote to {display}"),
+        Ok(_) => {}//println!("Successfully wrote to {display}"),
     }
 
-    std::process::Command::new("nasm")
+    let process = std::process::Command::new("nasm")
         .arg("-felf64")
         .arg("-g")
         .arg(&filename.replace(".bf", ".asm"))
         .output()
         .expect("failed to execute process");
 
+    if !process.status.success(){
+        println!("Couldn't assemble program: ");
+        print!("{}", std::str::from_utf8(process.stderr.as_slice()).unwrap());
+        print!("{}", std::str::from_utf8(process.stdout.as_slice()).unwrap());
+        exit(1);
+    }
+
+    // assert!(output.status.success());
+
     // use ld to link
-    std::process::Command::new("ld")
+    let process = std::process::Command::new("ld")
         .arg("-o")
         .arg(&out_file_path)
         .arg(&filename.replace(".bf", ".o"))
         .output()
         .expect("failed to execute process");
 
+    if !process.status.success(){
+        println!("Couldn't link program: ");
+        print!("{}", std::str::from_utf8(process.stderr.as_slice()).unwrap());
+        print!("{}", std::str::from_utf8(process.stdout.as_slice()).unwrap());
+        exit(1);
+    }
+
     #[cfg(not(debug_assertions))]
-    std::process::Command::new("rm")
+    let process = std::process::Command::new("rm")
         .arg(&filename.replace(".bf", ".asm"))
         .output()
         .expect("failed to execute process");
 
-    std::process::Command::new("rm")
+    #[cfg(not(debug_assertions))]
+    if !process.status.success(){
+        println!("Couldn't remove assembly: ");
+        print!("{}", std::str::from_utf8(process.stderr.as_slice()).unwrap());
+        print!("{}", std::str::from_utf8(process.stdout.as_slice()).unwrap());
+        exit(1);
+    }
+
+    let process = std::process::Command::new("rm")
         .arg(&filename.replace(".bf", ".o"))
         .output()
         .expect("failed to execute process");
+
+    if !process.status.success(){
+        println!("Couldn't remove object file: ");
+        print!("{}", std::str::from_utf8(process.stderr.as_slice()).unwrap());
+        print!("{}", std::str::from_utf8(process.stdout.as_slice()).unwrap());
+        exit(1);
+    }
 
     println!("Generated executable");
 }
