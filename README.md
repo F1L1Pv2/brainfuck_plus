@@ -35,8 +35,8 @@ Cells are `short unsigned ints` `(u8)` (for now)
 - `\` bitwise and current cell
 - `|` bitwise or current cell
 - `*` delete element from top of a stack
-- ``` @`{main}` ``` set tape to specified one
-- ```#tape msg byte 14 ``` this creates a new tape (if you dont declare any by default you will be on `main` tape which has `byte` cell size and cell_count set to `MEM_SIZE` constant
+- `@{main}` set tape to specified one
+- `#tape msg byte 14` this creates a new tape (if you dont declare any by default you will be on `main` tape which has `byte` cell size and cell_count set to `MEM_SIZE` constant
 
 **One thing to remember depending on your machine data could be in little or in big endian**
 

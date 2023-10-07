@@ -169,8 +169,11 @@ fn main() {
 
     let tokens = lex_file(contents, filename.clone());
     // dbg!(&tokens);
+    // exit(1);
     let tokens = preprocess_tokens(tokens, filename.clone(), path, includes, &mut tapes);
     let operations = parse_file(tokens, &tapes);
+
+    // dbg!(&operations);
 
     generate_code(operations, &mut file_content, &tapes);
 

@@ -1,15 +1,15 @@
 #tape msg byte `14`
 #tape syscall qword `4`
 
-@`{msg}` `"Hello, World!\n"`
+@{msg} "Hello, World!\n"
 
-@`{syscall}`
+@{syscall}
 
 `1`
 >
 `1`
 >
-`{msg}`
+{msg}
 >
 `14`
 

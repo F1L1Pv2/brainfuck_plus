@@ -12,117 +12,117 @@
 #tape temp byte `1`
 
 #tape rule byte `1`
-@`{rule}` `110`
+@{rule} `110`
 
 
 // putting 1 at the end of buff_size
-@`{array}` &
-@`{iterator}` buff_size -
+@{array} &
+@{iterator} buff_size -
 [
 
-    @`{array}` >
-    @`{iterator}` -
+    @{array} >
+    @{iterator} -
 ]
-@`{array}` `1` &
+@{array} `1` &
 // ---------------------------------
 
 // put new line at the end of buff
-@`{write_buff}` &
-@`{iterator}` buff_size
+@{write_buff} &
+@{iterator} buff_size
 [
 
-    @`{write_buff}` >
-    @`{iterator}` -
+    @{write_buff} >
+    @{iterator} -
 ]
-@`{write_buff}` `10` &
+@{write_buff} `10` &
 
 // ---------------------------------
 
-@`{syscall}` `1` > `1` > `{write_buff}` > buff_size + & // setup syscall for future usage
+@{syscall} `1` > `1` > {write_buff} > buff_size + & // setup syscall for future usage
 
 
-@`{iterator}` buff_size
+@{iterator} buff_size
 [
 
-    @`{iterator}` ^
+    @{iterator} ^
 
     // copying to write_buff and converting into ascii
-    @`{array}` &
-    @`{new_array}` &
-    @`{write_buff}` &
+    @{array} &
+    @{new_array} &
+    @{write_buff} &
 
-    @`{iterator}` buff_size
+    @{iterator} buff_size
     [
 
-        @`{array}` ^ >
-        @`{write_buff}` _ to_ascii >
+        @{array} ^ >
+        @{write_buff} _ to_ascii >
 
-        @`{iterator}` -
+        @{iterator} -
     ]
 
-    @`{syscall}` ?*
+    @{syscall} ?*
 
-    @`{iterator}` buff_size
+    @{iterator} buff_size
 
     [
         // move to current_cell
-        @`{array}` & 
-        @`{new_array}` & 
-        @`{iterator}` ^
+        @{array} & 
+        @{new_array} & 
+        @{iterator} ^
         [
-            @`{array}` <
-            @`{new_array}` <
-            @`{iterator}` -
+            @{array} <
+            @{new_array} <
+            @{iterator} -
         ]
 
         // ------------------------------------------------
 
         // combine 3 cells
 
-        @`{temp}` `0`
-        @`{array}` < ^ >  ^  > ^ < 
-        @`{temp_arr}` _  > _ ; > _ ;; & ^ > ^ > ^ &
-        @`{temp}` ||| ^
+        @{temp} `0`
+        @{array} < ^ >  ^  > ^ < 
+        @{temp_arr} _  > _ ; > _ ;; & ^ > ^ > ^ &
+        @{temp} ||| ^
 
         // ------------------------------------------------
 
         // get output from rule
 
-        @`{iterator}` _ //temp is iterator
-        @`{rule}` ^
+        @{iterator} _ //temp is iterator
+        @{rule} ^
 
-        @`{iterator}`
+        @{iterator}
         [
 
-            @`{rule}` : 
+            @{rule} : 
 
-            @`{iterator}` -
+            @{iterator} -
         ]
 
-        `1` ^ @`{rule}` \ ^
+        `1` ^ @{rule} \ ^
     
-        @`{new_array}` _
+        @{new_array} _
 
-        @`{rule}` _
+        @{rule} _
 
         // ------------------------------------------------
 
-        @`{iterator}` _ - //updating iterator
+        @{iterator} _ - //updating iterator
     ]
 
-    @`{array}` &
-    @`{new_array}` &
+    @{array} &
+    @{new_array} &
 
-    @`{iterator}` _ ^ buff_size -
+    @{iterator} _ ^ buff_size -
     [
-        @`{new_array}` ^
-        @`{array}` _
+        @{new_array} ^
+        @{array} _
 
-        @`{new_array}`>
-        @`{array}`>
+        @{new_array}>
+        @{array}>
 
-        @`{iterator}` -
+        @{iterator} -
     ]
 
-    @`{iterator}` _ - //updating iterator
+    @{iterator} _ - //updating iterator
 ]

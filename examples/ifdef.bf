@@ -1,13 +1,13 @@
 #define macro 
 //#define macro2
 #ifdef macro
-`"Y"`
+"Y"
 #else
-`"N"`
+"N"
 #endif
-.`"\n"`.
+."\n".
 
 #ifndef macro2
-`"L"`
-.`"\n"`.
+"L"
+."\n".
 #endif

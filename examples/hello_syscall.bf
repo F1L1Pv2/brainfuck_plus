@@ -3,7 +3,7 @@
 
 QR QR QR QR
 
-`"Hello, World!\n"`
+"Hello, World!\n"
 
 & //go back to addr 0
 
