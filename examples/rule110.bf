@@ -60,7 +60,7 @@
         @{iterator} -
     ]
 
-    @{syscall} ?*
+    @{syscall} ?!
 
     @{iterator} buff_size
 

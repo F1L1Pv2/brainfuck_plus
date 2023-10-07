@@ -15,4 +15,4 @@ QR
 QR
 `14`  //putting msg len into rdx
 
-&? //performing syscall
+&?! //performing syscall
