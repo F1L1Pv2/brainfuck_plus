@@ -1,6 +1,62 @@
 use brainfuck_plus_core::prelude::*;
 use std::process::exit;
 
+#[derive(PartialEq, Debug)]
+pub struct Condition {
+    pub addr: usize,
+}
+
+#[derive(PartialEq, Debug)]
+pub struct Forward {
+    pub back_addr: usize,
+}
+
+#[derive(PartialEq, Debug)]
+pub enum Jumps {
+    Condition(Condition),
+    Forward(Forward),
+}
+
+
+
+pub fn cross_reference(operations: &[Operation]) -> Vec<Jumps> {
+    let mut jumps: Vec<Jumps> = Vec::new();
+
+    for operation in operations {
+        match operation.token_type {
+            TokenType::ZeroJump => {
+                jumps.push(Jumps::Condition(Condition { addr: 0 }));
+            }
+            TokenType::NonZeroJump => {
+                let len = jumps.len();
+
+                //find the last condition
+                let mut last_condition = 0;
+                for j in (0..len).rev() {
+                    if jumps[j] == Jumps::Condition(Condition { addr: 0 }) {
+                        last_condition = j;
+                        break;
+                    }
+                }
+
+                if let Jumps::Condition(ref mut condition) = jumps[last_condition] {
+                    condition.addr = len;
+                }
+
+                //set the address of the forward to last condition
+                jumps.push(Jumps::Forward(Forward {
+                    back_addr: last_condition,
+                }));
+            }
+            _ => {}
+        }
+    }
+
+    jumps
+}
+
+
+
 pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tapes: &Vec<Tape>) {
     let mut last_condition = 0;
     // let mut mem_dbg_ln = 0;
