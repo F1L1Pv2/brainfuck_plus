@@ -9,7 +9,7 @@
 - quality of life improvements
 
 ## Instructions
-Cells are `short unsigned ints` `(u8)` (for now)
+
 #### Original instructions
 
 - `<` moves pointer to the left (wraps around in case of underflow)
