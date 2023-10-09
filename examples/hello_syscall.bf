@@ -7,12 +7,12 @@ QR QR QR QR
 
 & //go back to addr 0
 
-`1` //putting write syscall id 1 into rax
+1 //putting write syscall id 1 into rax
 QR
-`1` //putting stdout id 1 into rdi
+1 //putting stdout id 1 into rdi
 QR
 '$ QA QA //putting msg addr into rsi
 QR
-`14`  //putting msg len into rdx
+14  //putting msg len into rdx
 
 &?! //performing syscall

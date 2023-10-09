@@ -1,10 +1,10 @@
-`2` ^ `1` | // should give 3
-++++++++++ ++++++++++ ++++++++++ ++++++++++ ++++++++ . `10` . //converting to ascii and showing
+2 ^ 1 | // should give 3
+++++++++++ ++++++++++ ++++++++++ ++++++++++ ++++++++ . 10 . //converting to ascii and showing
 
-`6` ^ `4` \ // should give 4
+6 ^ 4 \ // should give 4
 
-++++++++++ ++++++++++ ++++++++++ ++++++++++ ++++++++ . `10` . //converting to ascii and showing
+++++++++++ ++++++++++ ++++++++++ ++++++++++ ++++++++ . 10 . //converting to ascii and showing
 
-`2` : // should give 1
+2 : // should give 1
 
-++++++++++ ++++++++++ ++++++++++ ++++++++++ ++++++++ . `10` . //converting to ascii and showing
+++++++++++ ++++++++++ ++++++++++ ++++++++++ ++++++++ . 10 . //converting to ascii and showing

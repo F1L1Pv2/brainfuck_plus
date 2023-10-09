@@ -1,21 +1,21 @@
-#define buff_size `50`
+#define buff_size 50
 #define to_ascii ++++++++++ ++++++++++ ++++++++++ ++++++++++ ++++++++
 
 
-#tape zero byte `1`
+#tape zero byte 1
 
 #tape array byte buff_size
 #tape new_array byte buff_size
-#tape temp_arr byte `3`
+#tape temp_arr byte 3
 
-#tape write_buff byte `1024`
-#tape iterator byte `1`
+#tape write_buff byte 1024
+#tape iterator byte 1
 
-#tape syscall qword `4`
-#tape temp byte `1`
+#tape syscall qword 4
+#tape temp byte 1
 
-#tape rule byte `1`
-@{rule} `110`
+#tape rule byte 1
+@{rule} 110
 
 
 // putting 1 at the end of buff_size
@@ -26,7 +26,7 @@
     @{array} >
     @{iterator} -
 ]
-@{array} `1` &
+@{array} 1 &
 // ---------------------------------
 
 // put new line at the end of buff
@@ -37,11 +37,11 @@
     @{write_buff} >
     @{iterator} -
 ]
-@{write_buff} `10` &
+@{write_buff} 10 &
 
 // ---------------------------------
 
-@{syscall} `1` > `1` > {write_buff} > buff_size + & // setup syscall for future usage
+@{syscall} 1 > 1 > {write_buff} > buff_size + & // setup syscall for future usage
 
 
 @{iterator} buff_size
@@ -83,7 +83,7 @@
 
         // combine 3 cells
 
-        @{temp} `0`
+        @{temp} 0
         @{array} < ^ >  ^  > ^ < 
         @{temp_arr} _  > _ ; > _ ;; & ^ > ^ > ^ &
         @{temp} ||| ^
@@ -103,7 +103,7 @@
             @{iterator} -
         ]
 
-        `1` ^ @{rule} \ ^
+        1 ^ @{rule} \ ^
     
         @{new_array} _
 
