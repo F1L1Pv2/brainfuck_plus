@@ -1,5 +1,5 @@
-#define QR >>>>>>>> // move pointer by a QWORD
-#define QA ++++++++ // add QWORD size
+#define QR 8`> // move pointer by a QWORD
+#define QA 8`+ // add QWORD size
 
 QR QR QR QR
 

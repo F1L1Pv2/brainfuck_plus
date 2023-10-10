@@ -1,5 +1,5 @@
 #define buff_size 50
-#define to_ascii ++++++++++ ++++++++++ ++++++++++ ++++++++++ ++++++++
+#define to_ascii 48`+
 
 
 #tape zero byte 1
@@ -59,7 +59,7 @@
 
         @{array} ^ >
         //@{write_buff} _ to_ascii > // writing what ever is in array
-        @{write_buff} _ [ ++++++++ ++++++++ @{zero} ] @{write_buff} to_ascii -------- -------- > // writing only values that are not 0
+        @{write_buff} _ [ 16`+ @{zero} ] @{write_buff} to_ascii 16`- > // writing only values that are not 0
 
         @{iterator} -
     ]

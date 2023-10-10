@@ -37,10 +37,12 @@
 - `!` delete element from top of a stack
 - `@{main}` set tape to specified one
 - `#tape msg byte 14` this creates a new tape (if you dont declare any by default you will be on `main` tape which has `byte` cell size and cell_count set to `MEM_SIZE` constant
+- ```10`+```You can iterate any operation with this format (in this example + op will be executed 10 times). it also works for macros
 
 **One thing to remember depending on your machine data could be in little or in big endian**
 
 ### Todo
+- [ ] Change Compiler backend to LLVM
 - [x] Write Nasm ELF 64 compiler
 - [x] Optimize compiler (still a lot of bloat)
 - [x] Add ability to perform syscalls
@@ -49,7 +51,7 @@
 - [ ] If possible rewrite bf+ in itself
 - [ ] Add Windows support (somehow)
 - [x] Add Push Pop Stack Operation
-- [ ] Add bitwise operations
+- [x] Add bitwise operations
 - [x] Add ability to create multiple mem lines and ability to specify their cell size and max len (in cells)
 - [x] Add Include Dirs and Libs to compiler
 - [ ] Add Ability to call extern functions
