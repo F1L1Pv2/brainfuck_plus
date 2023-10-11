@@ -57,7 +57,7 @@ pub fn cross_reference(operations: &[Operation]) -> Vec<Jumps> {
 
 
 
-pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tapes: &Vec<Tape>) {
+pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tapes: &Vec<Tape>, extern_funcs: Vec<String>) {
     let mut last_condition = 0;
     // let mut mem_dbg_ln = 0;
 
@@ -195,6 +195,51 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
                 // set pointer to 0
                 file_content
                     .push_str(format!("    mov QWORD[{}_pointer], 0\n", tape.name).as_str());
+            }
+
+            TokenType::Funcall => {
+
+                let func_name = operation.values[0].clone();
+
+                let mut exists: bool = false;
+
+                for func in &extern_funcs{
+                    if &func_name == func{
+                        exists = true;
+                        break;
+                    }
+                }
+
+                if !exists{
+                    println!(
+                        "{}:{}:{} Funcall: function isnt declared {:?}",
+                        operation.filename,
+                        operation.row,
+                        operation.col + 1,
+                        func_name
+                    );
+                    exit(1);
+                }
+
+                file_content.push_str(format!("    mov rbx, {}\n", tape.name).as_str());
+                file_content
+                    .push_str(format!("    add rbx, QWORD[{}_pointer]\n", tape.name).as_str());
+                file_content.push_str("    mov rdi, QWORD[rbx]\n");
+                file_content.push_str("    add rbx, 8\n");
+                file_content.push_str("    mov rsi, QWORD[rbx]\n");
+                file_content.push_str("    add rbx, 8\n");
+                file_content.push_str("    mov rdx, QWORD[rbx]\n");
+                file_content.push_str("    add rbx, 8\n");
+                file_content.push_str("    mov r10, QWORD[rbx]\n");
+                file_content.push_str("    add rbx, 8\n");
+                file_content.push_str("    mov r8, QWORD[rbx]\n");
+                file_content.push_str("    add rbx, 8\n");
+                file_content.push_str("    mov r9, QWORD[rbx]\n");
+                file_content.push_str(format!("    call {}\n", func_name).as_str());
+                file_content.push_str(format!("    mov rbx, {}\n", tape.name).as_str());
+                file_content
+                    .push_str(format!("    add rbx, QWORD[{}_pointer]\n", tape.name).as_str());
+                file_content.push_str("    push rax\n");
             }
 
             // '?' => {
@@ -559,6 +604,10 @@ pub fn generate_code(operations: Vec<Operation>, file_content: &mut String, tape
                 file_content.push_str("    mov QWORD[rax], rbx\n");
             }
 
+            TokenType::ExternFuncDecl => {
+                println!("ExternFuncDecl: Unreachable Something with preprocessing is wrong");
+                exit(1);
+            }
             TokenType::CellSize => {
                 println!("CellSize: Unreachable Something with preprocessing is wrong");
                 exit(1);

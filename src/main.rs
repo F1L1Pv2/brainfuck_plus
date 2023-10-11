@@ -113,11 +113,11 @@ fn main() {
         arg_i += 1;
     }
 
-    if !libs.is_empty() {
-        usage(args[0].clone());
-        println!("Libs are not currently implemented");
-        exit(1);
-    }
+    // if !libs.is_empty() {
+    //     usage(args[0].clone());
+    //     println!("Libs are not currently implemented");
+    //     exit(1);
+    // }
 
     if filename == String::new() {
         usage(args[0].clone());
@@ -165,17 +165,22 @@ fn main() {
     file_content.push_str("BITS 64\n");
     file_content.push_str("section .text\n");
     file_content.push_str("global _start\n");
-    file_content.push_str("_start:\n");
 
+    
     let tokens = lex_file(contents, filename.clone());
     // dbg!(&tokens);
     // exit(1);
-    let tokens = preprocess_tokens(tokens, filename.clone(), path, includes, &mut tapes);
+    let (tokens, extern_funcs) = preprocess_tokens(tokens, filename.clone(), path, includes, &mut tapes);
     let operations = parse_file(tokens, &tapes);
+    
+    for func in extern_funcs.iter(){
+        file_content.push_str(format!("extern {}\n", func).as_str());
+    }
 
+    file_content.push_str("_start:\n");
     // dbg!(&operations);
 
-    generate_code(operations, &mut file_content, &tapes);
+    generate_code(operations, &mut file_content, &tapes, extern_funcs);
 
     // generate_code_backup(tokens, &mut file_content);
 
@@ -244,6 +249,7 @@ fn main() {
         .arg("-o")
         .arg(&out_file_path)
         .arg(&filename.replace(".bf", ".o"))
+        .args(libs)
         .output()
         .expect("failed to execute process");
 

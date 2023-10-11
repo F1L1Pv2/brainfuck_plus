@@ -1,4 +1,7 @@
 /target
 /examples/*
 !/examples/*.bf
+!/examples/libs/test.c
+!/examples/libs/test.o
+!/examples/libs/extern_call.bf
 Cargo.lock
