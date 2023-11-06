@@ -2,8 +2,6 @@
 
 [Core](https://github.com/F1L1Pv2/brainfuck_plus-core)
 
-[Visualizer](https://github.com/F1L1Pv2/bfp-visualizer) (VIP)
-
 ## Main goals
 - extend bf to be less f*ck'y but still giving the same vibes
 - quality of life improvements
